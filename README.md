@@ -22,8 +22,8 @@ Some of my tasks as a member of SRL Rover Team have been:
 - Make experiments on the real Hardware
   
 ### In the next episode: 
-Because of the lack of a model-based rigorous control tuning, I took a different approach to the control of the robot leg.<br/> 
-Also, to provide better insight into the algorithm performances, a different modeling approach based on DH is taken. <br/>
+Because of the lack of a model-based rigorous control tuning, I took a different approach.<br/> 
+Also, to provide better insight into the algorithm performances, a different modeling of the leg based on DH is taken. <br/>
 With this model, I attempt to define new useful performance indices.
 
 Given the robot URDF:
@@ -37,7 +37,26 @@ Given the robot URDF:
 - Expand to 4-legs simulation and control
 - Define new performance index for legged-robots
 - Analyze the quality of some base postures, using defined indices
-- Implement the new joint controllers in the original ROS 2 code, and simulate using Gazebo.
+- Implement the new joint controllers in ROS 2, and simulate using Gazebo.
 
 ## Description 
-To better handle the robot joint controllers and model identification, I take the xacro file, convert it in a single URDF
+### Step 1: URDF to DH
+To better handle the robot joint controllers and model identification, I take the main [xacro](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Using-Xacro-to-Clean-Up-a-URDF-File.html) file and convert it into a single URDF.<br/>
+Be sure to have the proper package installed
+```bash
+sudo apt install ros-<distro>-xacro
+```
+Then you can run the command for conversion: 
+```bash
+xacro robot.xacro -o robot.urdf
+```
+
+Then, after defining an equivalent DH frame description, I identify the DH parameters from the URDF rigidBodyTree object created in the MATLAB script.<br/>
+At this point, I can initialize the robot leg as a SerialLink object. 
+
+Refer to the MATLAB script (commented as clear as possible) for all the passages. 
+
+### Step 2: Dynamic parameter Identification 
+ WIP...
+
+
