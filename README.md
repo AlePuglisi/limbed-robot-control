@@ -10,6 +10,9 @@ Now I'm working on modeling and performance analysis of an alternative control s
 ## Objectives
 
 ### In the previous episode:
+
+<img src=https://github.com/AlePuglisi/legged-robot-control/blob/main/image_video/transform_sequence_algorithm_GIF.gif>
+
 The software I used at SRL is written in C++ and is based on ROS 2 for communication and control.<br/>
 The robot joint controllers are implemented using ros2_control, and the simulation is based on Gazebo Classic.<br/>
 For the tuning of the joint_trajectory_controller and the refinement of robot [URDF](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/URDF-Main.html), I take an iterative tuning approach.<br/>
