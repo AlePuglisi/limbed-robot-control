@@ -10,7 +10,7 @@ clc
 % MODEL IMPORT AND INITIALIZATION
 
 % limbero leg model
-limbero_urdf = importrobot("LEG_LFGRIPPER.urdf", 'MeshPath', 'lbr_description/meshes');
+limbero_urdf = importrobot("urdf/LEG_LFGRIPPER.urdf", 'MeshPath', 'lbr_description/meshes');
 limbero_urdf.Gravity = [0 0 -9.81]; % set up gravity 
 
 limbero_urdf.DataFormat = 'row'; 

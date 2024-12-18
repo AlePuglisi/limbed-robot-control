@@ -15,7 +15,7 @@ close all
 %% URDF MODEL 
 % limbero leg model in URDF 
 % created as RigidBodyTree
-limbero_urdf = importrobot("LEG_LFGRIPPER.urdf", 'MeshPath', 'lbr_description/meshes');
+limbero_urdf = importrobot("urdf/LEG_LFGRIPPER.urdf", 'MeshPath', 'lbr_description/meshes');
 limbero_urdf.Gravity = [0 0 -9.81]; % set up gravity 
 
 limb_dof = 7; % constant dof 
