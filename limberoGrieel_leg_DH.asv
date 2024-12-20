@@ -449,7 +449,7 @@ end
 
 % 2) use identifyed inertia to tune indipendent joint PPI controller 
 %% CONTROLLER TUNING 
-w_cp = 10;      % position loop cut-off frequency [rad/s] ~2 Hz
+w_cp = 20;      % position loop cut-off frequency [rad/s] ~2 Hz
 w_cv = 10*w_cp; % velocity loop cut-off frequency [rad/s] ~20 Hz
 
 % SPEED CONTROL 
@@ -481,16 +481,13 @@ L = 30;                  % Desaturation anti-wind up parameter
 KP = zeros(1,7);
 TD = zeros(1,7);
 TI = zeros(1,7);
-KD = zeros(1,7);
-KI = zeros(1,7);
+TD = zeros(1,7);
+TD = zeros(1,7);
 
 for i=1:limbero.n
     KP(i) = kpv(i)*(kpp+1/Tiv);         % position proportional gain 
     TD(i) = kpv(i)/KP(i);               % position derivative time constant 
     TI(i) = KP(i)*Tiv/(kpp*kpv(i));     % position integral time constant 
-
-    KD(i) = KP(i)*TD(i);                % position derivative gain
-    KI(i) = KP(i)/TI(i);                % position integral gain
 end
 
 

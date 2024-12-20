@@ -1,10 +1,16 @@
-% This function compute symbolically the gravitational torque of a robot
+% This function compute the gravitational torque of a robot
 % manipiulator as function of the configuration q, considering all joints
 % as revolute (q = theta). 
-% it takes as input: 
-% a, d, alpha := DH parameters of the robot model 
-% r_cm := matrix of CoM positions in each link frame 
-% r_cm(i) = [ r_cm_x(i),r_cm_y(i), r_cm_z(i)] 
+% It is based on explicit computation of gravitational load accordingly to
+% Lagrangian formulation of robotic arm dynamic model 
+
+% it takes as input:
+% a, d, alpha, offset = DH parameters of the robot model                [1 x N_link]
+% r_cm                = matrix of CoM positions in each link frame      [N_link x 3] 
+%                       (r_cm(i,:) = [ r_cm_x(i),r_cm_y(i), r_cm_z(i)]) 
+% m                   = vector of links mass                            [N_link x 1]
+% q                   = robot joint configuration                       [1 x N_joints]
+% contact             = ground contact state [0: not contact, 1: contact]  
 
 function Taug = Gravity_compensation(a, d, alpha,offset, r_cm, m, q, contact)
 % syms q [length(a) 1]
