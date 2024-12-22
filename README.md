@@ -42,24 +42,45 @@ Given the robot URDF:
 - Analyze the quality of some base postures, using defined indices
 - Implement the new joint controllers in ROS 2, and simulate using Gazebo.
 
-## Description 
-### Step 1: URDF to DH
-To better handle the robot joint controllers and model identification, I take the main [xacro](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Using-Xacro-to-Clean-Up-a-URDF-File.html) file and convert it into a single URDF.<br/>
-Be sure to have the proper package installed
-```bash
-sudo apt install ros-<distro>-xacro
-```
-Then you can run the command for conversion: 
-```bash
-xacro robot.xacro -o robot.urdf
-```
+## Brief Implementation Description 
 
-Then, after defining an equivalent DH frame description, I identify the DH parameters from the URDF rigidBodyTree object created in the MATLAB script.<br/>
-At this point, I can initialize the robot leg as a SerialLink object. 
+- ### MODELING AND CONTROL TUNING 
+    ### Step 1: URDF to DH
+    To better handle the robot joint controllers and model identification, I take the main [xacro](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Using-Xacro-to-Clean-Up-a-URDF-File.html) file and convert it into a single 
+    URDF.<br/>
+    Be sure to have the proper package installed
+    ```bash
+    sudo apt install ros-<distro>-xacro
+    ```
+    Then you can run the command for conversion: 
+    ```bash
+    xacro robot.xacro -o robot.urdf
+    ```
+    
+    Then, after defining an equivalent DH frame description, I identify the DH parameters from the URDF rigidBodyTree object created in the MATLAB script.<br/>
+    At this point, I can initialize the robot leg as a SerialLink object. 
+    
+    Take a look at the [MATLAB](https://github.com/AlePuglisi/legged-robot-control/blob/main/limberoGrieel_leg_DH.m) script (commented as clear as possible) for all the passages. 
+    
+     ... README WIP ...
+    ### Step 2: Dynamic parameter Identification 
+    (Already implemented in MATLAB)
+    
+    ### Step 3: Control Tuning 
+    (Already done for the servomotor model, independent joint controller) 
 
-Refer to the MATLAB script (commented as clear as possible) for all the passages. 
+- ### MATLAB SINGLE LIMB SIMULATION
+  (Simulink scheme implemented)
+  
+- ### MATLAB 4-LIMB KINEMATIC SIMULATION
+  (Not yet implemented ... check if the dynamic simulation of the closed-kinematic chain is feasible with some SerialLink connection)
+  
+- ### POSTURE MANIPULABILITY ANALYSIS
+  (Some tests done for single limb, soon extension for legged closed chain structure)
+  
+- ### ROS2+Gazebo MODEL-BASED CONTROLLER PERFORMANCE ANALYSIS
+  (code implemented, controller gains adjustment and correction needed for stability) 
+  
 
-### Step 2: Dynamic parameter Identification 
- WIP...
 
 
