@@ -336,8 +336,8 @@ for i=1:limbero_contact.n
     %  limbero.links(i).Tc = [0.4, -0.4];
 end
 
-limbero_contact.tool = transl(0.18, -0.18, 0);
-limbero_contact.payload(3.1152/4 + limbero_contact.links(7).m, [0.18, -0.18, 0]);
+% limbero_contact.tool = transl(0.18, -0.18, 0);
+% limbero_contact.payload(3.1152/4 + limbero_contact.links(7).m, [0.18, -0.18, 0]);
 %limbero_contact.links(N_link).m =  limbero_contact.links(N_link).m + 3.1152/4;
 
 %%  PLOT LIMBERO+GRIEEL contact model 
@@ -492,6 +492,10 @@ for i=1:limbero.n
     KD(i) = KP(i)*TD(i);                % position derivative gain
     KI(i) = KP(i)/TI(i);                % position integral gain
 end
+
+%% Save usefull data in a mat file: 
+save('limbero_data', 'limbero', 'limbero_contact', 'limbero_urdf');
+
 
 
 
