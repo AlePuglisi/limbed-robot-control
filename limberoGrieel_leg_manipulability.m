@@ -9,7 +9,7 @@ load('limbero_data');
 %% ELLIPSOID MANIPULABILITY %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% LIMBERO SWING 
+%% LIMBERO SWING %%
 
 % Define useful varaibles: 
 N_link = limbero.n;
@@ -24,16 +24,16 @@ J = limbero.jacob0(q);
 % Core of velocity manipulability ellipsoid 
 E = J*J'; 
 
-Et = E(1:3, 1:3);
-Er = E(4:6, 4:6);
+Et1 = E(1:3, 1:3);
+Er1 = E(4:6, 4:6);
 
 % check if decoupling of rotation/translation can be numerically meaningful   
-coupling_ratio = norm(E(1:3, 4:6))/(norm(Et)+ norm(Er));
+coupling_ratio = norm(E(1:3, 4:6))/(norm(Et1)+ norm(Er1));
 
 % plot robot and ellipsoid to check if meaningful
-figure('Name', 'LIMBERO LF LEG, SWINGING DH (Coxa-Gripper');
+figure('Name', 'LIMBERO LF LEG,SWINGING(Coxa-Gripper), MANIPULABILITY');
 limbero.plot(q, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
-title('Limbero+Grieel LF limb DH, swinging (q = qz)');
+title('Limbero+Grieel LF limb DH, swinging (q = qz), Manipulability');
 
 % rototransalte to tool frame 
 T0 = limbero.fkine(q);
@@ -45,23 +45,15 @@ Tool_rotation = T0.R;
 
 % plot ellipsoid 
 hold on 
-plot_ellipse(Et,Tool_translation, 'edgecolor', 'r');
+plot_ellipse(Et1,Tool_translation, 'edgecolor', 'r');
 
-%% Alternative decomposition in translation/rotation
-% jacobian decomposition
-Jt = J(1:3,:);
-Jr = J(4:6,:);
-% ellipsoid decomposition 
-Et = Jt*Jt';
-Er = Jr*Jr'; 
-
-% plot robot 
-figure('Name', 'LIMBERO LF LEG, SWINGING DH (Coxa-Gripper');
+%% Direct way through roboticstoolbox: 
+figure('Name', 'LIMBERO LF LEG,SWINGING(Coxa-Gripper), MANIPULABILITY');
 limbero.plot(q, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
-title('Limbero+Grieel LF limb DH, swinging (q = qz)');
+title('Limbero+Grieel LF limb DH, swinging (q = qz), Manipulability');
 % plot ellipsoid 
-new_Et = Tool_rotation*Et*Tool_rotation'; 
-hold on 
-plot_ellipse(Et,Tool_translation, 'edgecolor', 'r');
+limbero.vellipse(q, 'fillcolor', 'b', 'edgecolor', 'w', 'alpha', 0.5);
 
-%% LIMBERO CONTACT 
+%-----------------------------%%
+%%    LIMBERO CONTACT         %%
+
