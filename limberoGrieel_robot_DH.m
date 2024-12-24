@@ -6,6 +6,7 @@ close all
 %%%% LIMBERO + GRIEEL DH ROBOT MODEL %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % run this code to create thr robot model represented by 4 limbs 
+% This is a Test code..
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %% DH MODEL CREATION %%
