@@ -9,7 +9,9 @@ load('limbero_data');
 %% ELLIPSOID MANIPULABILITY %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%-----------------%
 %% LIMBERO SWING %%
+%-----------------%
 
 % Define useful varaibles: 
 N_link = limbero.n;
@@ -18,24 +20,24 @@ q1 = [0 -pi*2/3 pi*2/3 -pi/4 0 0 0];
 
 q = q0;
 
-% Compute jacobian matrix 
+%% Compute manipulability from jacobian matrix 
 J = limbero.jacob0(q);
 
 % Core of velocity manipulability ellipsoid 
 E = J*J'; 
 
-Et1 = E(1:3, 1:3);
-Er1 = E(4:6, 4:6);
+Et = E(1:3, 1:3);
+Er = E(4:6, 4:6);
 
 % check if decoupling of rotation/translation can be numerically meaningful   
-coupling_ratio = norm(E(1:3, 4:6))/(norm(Et1)+ norm(Er1));
+coupling_ratio = norm(E(1:3, 4:6))/(norm(Et)+ norm(Er));
 
 % plot robot and ellipsoid to check if meaningful
 figure('Name', 'LIMBERO LF LEG,SWINGING(Coxa-Gripper), MANIPULABILITY');
 limbero.plot(q, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
 title('Limbero+Grieel LF limb DH, swinging (q = qz), Manipulability');
 
-% rototransalte to tool frame 
+% (roto)transalte to tool frame 
 T0 = limbero.fkine(q);
 Tool_translation = T0.t; 
 Tool_rotation = T0.R; 
@@ -45,15 +47,78 @@ Tool_rotation = T0.R;
 
 % plot ellipsoid 
 hold on 
-plot_ellipse(Et1,Tool_translation, 'edgecolor', 'r');
+plot_ellipse(Et,Tool_translation, 'edgecolor', 'r');
 
-%% Direct way through roboticstoolbox: 
+pause()
+close all 
+
+%% Direct computation through roboticstoolbox: 
+
 figure('Name', 'LIMBERO LF LEG,SWINGING(Coxa-Gripper), MANIPULABILITY');
 limbero.plot(q, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
 title('Limbero+Grieel LF limb DH, swinging (q = qz), Manipulability');
 % plot ellipsoid 
 limbero.vellipse(q, 'fillcolor', 'b', 'edgecolor', 'w', 'alpha', 0.5);
 
-%-----------------------------%%
-%%    LIMBERO CONTACT         %%
+% NOTICE: 
+% Peter Corke toolbox vellipse does exactly the same as my code. 
+% But it provide all the options. It slow down a bit my computer...
+
+%-------------------%
+%% LIMBERO CONTACT %%
+%-------------------%
+
+close all 
+
+q0_contact = zeros(1,N_link); %configuration when in contact 
+q1_contact = [0, 0, 0, 0, -pi/6, pi/6, 0];
+q_contact = q1_contact;
+
+
+%% Compute manipulability from jacobian matrix
+J_contact = limbero_contact.jacob0(q_contact);
+
+% Core of velocity manipulability ellipsoid 
+E_contact = J_contact*J_contact'; 
+
+Et_contact = E_contact(1:3, 1:3);
+Er_contact = E_contact(4:6, 4:6);
+
+% check if decoupling of rotation/translation can be numerically meaningful   
+coupling_ratio_contact = norm(E_contact(1:3, 4:6))/(norm(Et_contact)+ norm(Er_contact));
+
+% plot the robot and then ellipsoid
+figure('Name', 'LIMBERO LF LEG,CONTACT(Gripper-Coxa), MANIPULABILITY');
+limbero_contact.plot(q_contact, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
+title('Limbero+Grieel LF limb DH, contact (q = qz), Manipulability');
+% revert z and y axis for a proper visualization
+set(gca, 'Zdir', 'reverse');
+set(gca, 'Ydir', 'reverse');
+
+% (roto)transalte to tool frame 
+T0_contact = limbero_contact.fkine(q_contact);
+Tool_translation_contact = T0_contact.t; 
+Tool_rotation_contact = T0_contact.R; 
+% rescale for visualization purpose 
+%new_Et = Tool_rotation*Et*Tool_rotation'*0.005^2; 
+%new_Et = Et*0.005^2;
+
+% plot ellipsoid 
+hold on 
+plot_ellipse(Et_contact,Tool_translation_contact, 'edgecolor', 'r');
+
+pause()
+close all 
+
+%% Direct computation through roboticstoolbox: 
+
+figure('Name', 'LIMBERO LF LEG,CONTACT(Gripper-Coxa), MANIPULABILITY');
+limbero_contact.plot(q_contact, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
+title('Limbero+Grieel LF limb DH, contact (q = qz), Manipulability');
+% revert z and y axis for a proper visualization
+set(gca, 'Zdir', 'reverse');
+set(gca, 'Ydir', 'reverse');
+
+% plot ellipsoid 
+limbero_contact.vellipse(q_contact, 'fillcolor', 'b', 'edgecolor', 'w', 'alpha', 0.5);
 
