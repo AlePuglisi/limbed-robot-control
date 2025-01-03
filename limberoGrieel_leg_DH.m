@@ -11,7 +11,7 @@ clc
 
 % limbero leg model
 limbero_urdf = importrobot("urdf/LEG_LFGRIPPER.urdf", 'MeshPath', 'lbr_description/meshes');
-limbero_urdf.Gravity = [0 0 -9.81]; % set up gravity 
+limbero_urdf.Gravity = [0; 0; 9.81]; % set up gravity 
 
 limbero_urdf.DataFormat = 'row'; 
 
@@ -85,7 +85,7 @@ L= [L1 L2 L3 L4 L5 L6 L7];
 %% INITIALIZE the robot
 limbero = SerialLink(L);
 limbero.name = 'LIMBERO';
-limbero.gravity = [0;0;9.81]; %gravity acceleration vector expressed in the base frame 
+limbero.gravity = [0; 0; 9.81]; %gravity acceleration vector expressed in the base frame 
 
 
 %% CONVERSION OF DYNAMIC PROPERTY FROM URDF TO DH 
@@ -194,7 +194,7 @@ end
 %% PLOT ROBOT 
 figure('Name', 'LIMBERO LF LEG, SWINGING DH (Coxa-Gripper');
 %limbero.plot3d([0, pi/2, 0, 0, 0, 0, 0], 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6);
-limbero.plot(qz, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
+limbero.plot(qz, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jvec', 'nobase', 'noshadow', 'notiles');
 title('Limbero+Grieel LF limb DH, swinging (q = qz)');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -236,7 +236,8 @@ L_contact = [L1_contact, L2_contact, L3_contact, L4_contact, L5_contact, L6_cont
 %% ROBOT INITIALIZATION
 limbero_contact = SerialLink(L_contact);
 limbero_contact.name = 'LIMBERO_{contact}';
-limbero_contact.gravity = [0;0;9.81]; % gravity acceleration vector expressed in the base frame 
+limbero_contact.base = trotx(pi*180/pi);
+limbero_contact.gravity = [0; 0; 9.81]; % gravity acceleration vector expressed in the base frame 
 
 %% DYNAMIC IDENTIFICATION 
 % conversion from URDF to DH
@@ -342,11 +343,12 @@ end
 
 %%  PLOT LIMBERO+GRIEEL contact model 
 figure('Name', 'LIMBERO LF LEG, CONTACT DH (Gripper-coxa)')
-limbero_contact.plot([0, 0, 0, 0, 0, 0, pi/4], 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jaxes', 'nobase', 'noshadow', 'notiles');
+limbero_contact.plot([0, 0, 0, 0, 0, 0, 0], 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jvec', 'nobase', 'noshadow', 'notiles');
 title('Limbero+Grieel LF limb DH, contact (q = qz)')
+
 % revert z and y axis for a proper visualization
-set(gca, 'Zdir', 'reverse');
-set(gca, 'Ydir', 'reverse');
+% set(gca, 'Zdir', 'reverse');
+% set(gca, 'Ydir', 'reverse');
 
 %% CHECK for consistency between URDF and DH models %%
 

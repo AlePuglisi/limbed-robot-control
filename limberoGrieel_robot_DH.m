@@ -96,7 +96,7 @@ L= [L1 L2 L3 L4 L5 L6 L7];
 %% Create the robot
 limbero = SerialLink(L);
 limbero.name = 'LIMBERO';
-limbero.gravity = [0;0;9.81]; %gravity acceleration vector expressed in the base frame 
+limbero.gravity = [0;0;-9.81]; %gravity acceleration vector expressed in the base frame 
 qz = zeros(1,limbero.n);
 
 %% CONVERSION OF DYNAMIC PROPERTY FROM URDF TO DH 

@@ -71,7 +71,7 @@ for j=1:N_link
 end
 
 if contact == 1
-    g0 = [0,0,9.81]'; % gravity
+    g0 = [0,0, 9.81]'; % gravity
 elseif contact == 0
     g0 = [0,0,-9.81]';
 end
