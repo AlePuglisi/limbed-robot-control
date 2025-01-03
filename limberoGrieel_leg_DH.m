@@ -58,6 +58,7 @@ d5 = T_end2driving(1,4);
 a5 = T_end2driving(3,4);
 a6 = T_driving2gripper(3,4);
 d7 = T_driving2gripper(1,4) + 0.1; % 0.1 is the length of the gripper itslef 
+%d7 = 0; % to let swing/contact model coincide 
 
 alpha = [-pi/2,0,0,-pi/2,pi/2, -pi/2, 0]; %[in rad]
 a = [a1,a2,a3,0,a5,a6, 0]; %[in m]
@@ -496,7 +497,8 @@ for i=1:limbero.n
 end
 
 %% Save usefull data in a mat file: 
-save('limbero_data', 'limbero', 'limbero_contact', 'limbero_urdf');
+tool_length = d7;
+save('limbero_data', 'limbero', 'limbero_contact', 'limbero_urdf', 'tool_length');
 
 
 
