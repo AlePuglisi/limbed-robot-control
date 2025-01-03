@@ -94,43 +94,112 @@ end
 % Plot the robot 
 figure('Name', 'LIMBERO+GRIEEL CONTACT q=qz')
 hold on
-for i = 1:N_limb
-    ROBOT_CONTACT(i).plot(q_contact(i,:),'workspace', [-0.5 0.5 -0.5 0.5 0.0 0.5], 'noshadow', 'notiles', 'scale', 0.6); 
-end
-
-% Set axis limits manually to ensure the entire robot is visible
-xlim([-0.6 0.6]);  % Set x-axis limits
-ylim([-0.6 0.6]);  % Set y-axis limits
-zlim([ 0.0 0.6]);  % Set z-axis limits
-
-% Set equal aspect ratio to avoid distortion
-axis equal; 
-title('Robot zero configuration, Contact limbs');
+plot_robot_contact(ROBOT_CONTACT, q_contact);
 
 % Represent Base Frame and Shape (as Rectangular patch) 
 % I take as inertial frame the base-footprint center in the zero configuration
 T_base_footprint = eye(4,4);
 trplot(T_base_footprint, 'rgb', 'length', 0.1, 'arrow');
 
-T_coxa_limb_root = zeros(4,4,N_limb);
-T_coxa = zeros(4,4,N_limb);
-T_limb_root = zeros(4,4,N_limb);
-
-limb_names = ['LF'; 'LH'; 'RH'; 'RF'];
-
+% plot the other useful frames
 for i = 1:N_limb
-    T_coxa_limb_root(:,:,i) = trotz(-q_contact(i,7)*180/pi);
-    T_coxa(:,:,i) = ROBOT_CONTACT(i).fkine(q_contact(i,:));
-    T_limb_root(:,:,i) = T_coxa(:,:,i)*T_coxa_limb_root(:,:,i);
-    trplot(T_limb_root(:,:,i), 'rgb', 'length', 0.08, 'arrow');
+    h_root0{i} = trplot(eye(4));
+end
+h_base0 = trplot(eye(4));
+h_patch0 = patch([0 0 0 0], [0 0 0 0], 'b');
+[T_base, T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q_contact,W,L, h_root0, h_base0, h_patch0);
+
+% pause;
+% 
+% % check in new configuartion:
+% q_contact(1,:) = [0,0,0,0,-pi/6, 0, 0];
+% plot_robot_contact(ROBOT_CONTACT, q_contact);
+% [T_base, T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q_contact,W,L, h_root, h_base, h_patch);
+
+grasp_matrix = compute_grasp_matrix(r_base);
+E_base = compute_base_ellipsoid(ROBOT_CONTACT, q_contact, grasp_matrix);
+
+%% USEFUL FUNCTIONS IMPLEMENTATION
+
+%% FRAMES UPDATE
+% This function updates the visualization of limb_root and base frames
+function [T_base, T_limb_root,r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT, q, W, L, h_root_in, h_base_in, h_patch_in)
+    N_limb = length(ROBOT);
+    delete(h_patch_in);
+    for i=1:N_limb
+        delete(h_root_in{i});
+    end
+    delete(h_base_in);
+
+    limb_names = ['LF'; 'LH'; 'RH'; 'RF'];
+
+    T_coxa_limb_root = zeros(4,4,N_limb);
+    T_coxa = zeros(4,4,N_limb);
+    T_limb_root = zeros(4,4,N_limb);
+    q_contact = q;
+
+    for i = 1:N_limb
+        T_coxa_limb_root(:,:,i) = trotz(-q_contact(i,7)*180/pi);
+        T_coxa(:,:,i) = ROBOT(i).fkine(q_contact(i,:));
+        T_limb_root(:,:,i) = T_coxa(:,:,i)*T_coxa_limb_root(:,:,i);
+        h_root{i} = trplot(T_limb_root(:,:,i), 'rgb', 'length', 0.08, 'arrow', 'framelabel', strcat(limb_names(i,:), 'limb root'));
+        
+        T = (transl(-sqrt((W/2)^2+(L/2)^2), 0, 0)*trotz(-pi/4*180/pi))^-1;
+        r_base_tilde(i,:) = T_limb_root(:,:,i)*T(:,4);
+        r_base(i,:) = r_base_tilde(i,1:3);
+    end
+
+    T_base = T_limb_root(:,:,1)*transl(-sqrt((W/2)^2+(L/2)^2), 0, 0)*trotz(-pi/4*180/pi);
+    h_base = trplot(T_base, 'rgb', 'length', 0.1, 'arrow', 'framelabel', 'base');
+    base_x = T_base(1,4);
+    base_y = T_base(2,4);
+    base_z = T_base(3,4);
+
+    h_patch = patch('XData',[T_limb_root(1,4,1), T_limb_root(1,4,2), T_limb_root(1,4,3), T_limb_root(1,4,4)],'YData',[T_limb_root(2,4,1), T_limb_root(2,4,2), T_limb_root(2,4,3), T_limb_root(2,4,4)],'ZData',[T_limb_root(3,4,1), T_limb_root(3,4,2), T_limb_root(3,4,3), T_limb_root(3,4,4)], 'FaceColor', 'b', 'FaceAlpha', 0.8);
 end
 
-T_base = T_limb_root(:,:,1)*transl(-sqrt((W/2)^2+(L/2)^2), 0, 0)*trotz(-pi/4*180/pi);
-trplot(T_base, 'rgb', 'length', 0.1, 'arrow');
-base_x = T_base(1,4);
-base_y = T_base(2,4);
-base_z = T_base(3,4);
+%% PLOT ROBOT
+% This function plot the ROBOT in contact state with configuration q
+function plot_robot_contact(ROBOT, q)
+    N_limb = length(ROBOT);
+    q_contact = q; 
+    for i = 1:N_limb
+        ROBOT(i).plot(q_contact(i,:),'workspace', [-0.5 0.5 -0.5 0.5 0.0 0.5], 'noshadow', 'notiles', 'scale', 0.6); 
+    end
+    
+    % Set axis limits manually to ensure the entire robot is visible
+    xlim([-0.6 0.6]);  % Set x-axis limits
+    ylim([-0.6 0.6]);  % Set y-axis limits
+    zlim([ 0.0 0.6]);  % Set z-axis limits
+    
+    % Set equal aspect ratio to avoid distortion
+    axis equal; 
+    title('Robot zero configuration, Contact limbs');
+end
 
-patch('XData',[base_x - L/2, base_x - L/2, base_x + L/2, base_x + L/2],'YData',[base_y + W/2, base_y - W/2, base_y - W/2, base_y + W/2],'ZData',[base_z base_z base_z base_z], 'FaceColor', 'b', 'FaceAlpha', 0.8);
+%% COMPUTE GRASP MATRIX 
+function grasp_matrix = compute_grasp_matrix(r)
+    grasp_matrix = [];
+    for i=1:length(r)
+        R(:,:,i) = [0 -r(i,3) r(i,2); r(i,3) 0 -r(i,1); -r(i,2) r(i,1) 0];
+        W(:,:,i) = [eye(3), zeros(3,3); R(:,:,i), eye(3)];
+        grasp_matrix = [grasp_matrix, W(:,:,i)];
+    end
+end
+
+%% COMPUTE BASE MANIPULABILITY CORE
+function base_ellipsoid = compute_base_ellipsoid(ROBOT, q, W)
+    N_limb = length(ROBOT); 
+    N_joint = ROBOT(1).n;
+    J_full = zeros(N_limb*6,N_limb*N_joint);
+    for i=1:N_limb
+        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = ROBOT(i).jacobe(q);
+    end
+    Ja = (J_full'*pinv(W))';
+    base_ellipsoid = Ja*Ja';
+end
+
+
+
 
 
