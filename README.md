@@ -1,7 +1,7 @@
 # legged-robot-control
 MATLAB | Simulink | robotics-toolbox | Legged Robot | Modeling and Control | URDF to DH 
 
-This Repository contains the MATLAB code and Simulink scheme for modeling and control of LIMBERO+GRIEEL (legged robot prototype of Space Robotics Lab (SRL), Tohoku University ).<br/>
+This Repository contains the MATLAB code and Simulink scheme for modeling and control of LIMBERO+GRIEEL, a legged robot prototype of Space Robotics Lab (SRL), Tohoku University.<br/>
 
 This is a "sequel" of my work at SRL as a research student, for my Master's thesis at Politecnico di Milano. <br/>
 At SRL I updated the ROS 2 software and implemented stability algorithms. <br/>
