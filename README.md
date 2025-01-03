@@ -21,6 +21,7 @@ Some of my tasks as a member of the SRL Rover Team have been:
 - Update the C++ nodes for high/low-level control, with 3 additional joints in each limb (new end-effector transformable module)
 - Update the XACRO description to make the robot reconfigurable (use launch arguments to choose end-effector mode).
 - Retune URDF parameters to make the Gazebo simulation more reliable (friction, dumping, Gazebo tags, etc..)
+- Write a Python node to collect in a CSV the synchronized joint trajectory tracking data, then a Python script to analyze control performance with matplotlib
 - Update ros2_control configuration, and retune the joint controller PID gains
 - According to support polygon stability theory, implement an algorithm for base positioning and end-effector module transformation.
 - Retune DYNAMIXEL servomotors with Dynamixel Wizard, by trial and error.
