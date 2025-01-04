@@ -19,7 +19,11 @@ L = 0.35; % Base Length
 g = [0; 0; 9.81]; % Gravity vector
 
 q_contact = [0,0,pi/2,0,0,0,0];
+
+%%%%%%%%%%%%%%%%%%%%%%
 %% SWING LEGS MODEL %%
+%%%%%%%%%%%%%%%%%%%%%%
+
 % Homogeneus Transformations for Base to Limbroot position
 tz_ee = limbero.fkine(q_contact).t(3); % z-coordinate of limb tool = limb height
 
@@ -62,7 +66,9 @@ hold off
 
 title('Robot Contact configuration, Swing limbs');
 
+%%%%%%%%%%%%%%%%%%%%%%%%
 %% CONTACT LEGS MODEL %% 
+%%%%%%%%%%%%%%%%%%%%%%%%
 g = [0; 0; 9.81];             % Gravity vector
 q0_contact = zeros(1,N_link); % zero joint configuration
 
@@ -124,9 +130,10 @@ grasp_matrix = compute_grasp_matrix(r_base);
 
 pause 
 %% Experiment with Base motion
-[q1_contact,T_base] = translate_base(ROBOT_CONTACT,T_base0, q_contact, 0.05, 0.05, 0.0);
+[q1_contact,T_base] = translate_base(ROBOT_CONTACT,T_base0, q_contact, 0.0, 0.0, -0.02);
 plot_robot_contact(ROBOT_CONTACT, q1_contact);
 [T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q1_contact, T_base, W,L, h_root, h_base, h_patch);
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,6 +142,23 @@ plot_robot_contact(ROBOT_CONTACT, q1_contact);
 
 %% FRAMES UPDATE
 % This function updates the visualization of limb_root and base frames
+% INPUT: 
+% - ROBOT      = array of SerialLink object, each one describing one limb
+% - q          = current limbs configuration, as an [N_limb x N_joint] matrix
+% - T_base     =  4x4 Homomgeneus Transformation, base wrt fixed frame
+% - W          = base width in meters
+% - L          = base length in meters
+% - h_root_in  = handle to root_link SE3 plot graphic, as [1x4] cell, each limb
+% - h_base_in  = handle to base SE3 graphic
+% - h_patch_in = handle to base patch graphic
+% OUTPUT: 
+% - T_limb_root = 4x4 Homomgeneus Transformation, limb root wrt fixed frame
+% - r_base      = matrix [N_limb x 3] containing in each row the vector of the limb
+%                 "graspoing point" with the robot base (limb-base attachment)
+% - h_root      = New handle to root_link SE3 plot graphic, as [1x4] cell, each limb
+% - h_base      = New handle to base SE3 graphic
+% - h_patch     = New handle to base patch graphic
+
 function [T_limb_root,r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT, q, T_base, W, L, h_root_in, h_base_in, h_patch_in)
     N_limb = length(ROBOT);
     delete(h_patch_in);
@@ -168,7 +192,10 @@ function [T_limb_root,r_base, h_root, h_base, h_patch] = update_frames_contact(R
 end
 
 %% PLOT ROBOT
-% This function plot the ROBOT in contact state with configuration q
+% This function plot the ROBOT Limbs in contact state with configuration q
+% INPUT: 
+% - ROBOT = array of SerialLink object, each one describing one limb
+% - q     = current limbs configuration, as an [N_limb x N_joint] matrix
 function plot_robot_contact(ROBOT, q)
     N_limb = length(ROBOT);
     q_contact = q; 
@@ -187,6 +214,15 @@ function plot_robot_contact(ROBOT, q)
 end
 
 %% COMPUTE GRASP MATRIX 
+% this function compute the grasp matrix given the vector of the limbr root
+% frames, in the fixed inertia frame
+
+% INPUT: 
+% - r = matrix [N_limb x 3] containing in each row the vector of the limb
+%      "graspoing point" with the robot base
+% OUTPUT: 
+% - grasp_matrix = [6 x (N_limb*N_joint)] matrix, representing grasp
+%                 relation
 function grasp_matrix = compute_grasp_matrix(r)
     grasp_matrix = [];
     for i=1:length(r)
@@ -197,6 +233,23 @@ function grasp_matrix = compute_grasp_matrix(r)
 end
 
 %% COMPUTE BASE MANIPULABILITY CORE
+% This function compute the core 6x6 matrix of the base velocity elliposid
+
+% INPUT:
+% - ROBOT = array of SerialLink, each limb
+% - q     = current robot configuration, N_limb*N_joint matrix (each row
+%           correspond to one limb configuration)
+% - W     = grasp matrix
+% OUTPUT: 
+% - base_ellispoid = correspond to the core matrix E s.t the ellipsoid is
+%                    descriped  by v*(E)^-1*v'<=1
+% -Ja              = corresponding grasp Jacobian matrix, relating base absolute speed
+%                    with joint speed
+
+% [TODO]: Fix this function to compute it based on the amount of limb in
+% contact, extracting this information from the dimension of W or something
+% else..
+
 function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, W)
     N_limb = length(ROBOT); 
     N_joint = ROBOT(1).n;
@@ -210,6 +263,20 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, W)
 end
 
 %% COMPUTE BASE MOTION CONFIGURATION
+% This function update the robot configuration and base homogeneus
+% transformation, accordingly to the desired base translation 
+% INPUT:
+% - ROBOT    = array containing each limb as SerialLink object
+% - T_base   = 4x4 Homomgeneus Transformation, base wrt fixed frame
+% - q        = current limbs configuration as [N_limb x N_joint] matrix
+% - x_motion = base translation on x direction, in base coordinates
+% - y_motion = base translation on x direction, in base coordinates
+% - z_motion = base translation on x direction, in base coordinates
+% OUTPUT: 
+% - q_contact = [N_limb x N_joint] matrix of new limbs configuration to achieve desired translation
+% - T_base    = New 4x4 Homomgeneus Transformation, base wrt fixed frame,
+%               after translation
+
 function [q_contact, T_base] = translate_base(ROBOT,T_base,  q, x_motion, y_motion, z_motion)
     N_limb = length(ROBOT);
 
