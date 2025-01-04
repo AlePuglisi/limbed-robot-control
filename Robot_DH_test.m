@@ -37,7 +37,7 @@ LH_leg = SerialLink(limbero, 'name', 'LH', 'gravity', g, 'base', T_LH);
 RH_leg = SerialLink(limbero, 'name', 'RH', 'gravity', g, 'base', T_RH);
 RF_leg = SerialLink(limbero, 'name', 'RF', 'gravity', g, 'base', T_RF);
 
-ROBOT = [LF_leg, LH_leg, RH_leg, RF_leg]; 
+ROBOT_SWING = [LF_leg, LH_leg, RH_leg, RF_leg]; 
 
 q0 = zeros(1,N_link);
 q1 = [0,0,pi/2,0,0,0,0];
@@ -47,7 +47,7 @@ q = q1;
 figure('Name', 'LIMBERO+GRIEEL q=qz')
 hold on
 for i = 1:N_limb
-    ROBOT(i).plot(q,'workspace', [-0.5 0.5 -0.5 0.5 -0.5 0.5], 'nobase', 'noshadow', 'notiles', 'view', [30 30], 'scale', 0.6); 
+    ROBOT_SWING(i).plot(q,'workspace', [-0.5 0.5 -0.5 0.5 -0.5 0.5], 'nobase', 'noshadow', 'notiles', 'view', [30 30], 'scale', 0.6); 
 end
 
 % Set axis limits manually to ensure the entire robot is visible
@@ -92,10 +92,9 @@ RF_leg_contact = SerialLink(limbero_contact, 'name', 'RF_{contact}', 'gravity', 
 
 ROBOT_CONTACT = [LF_leg_contact, LH_leg_contact, RH_leg_contact, RF_leg_contact]; 
 
-q0_contact = zeros(1,N_link);
 for i = 1:N_limb
     ROBOT_CONTACT(i).qlim(1,:) = [0 0]; % fix the driving joint to avoid using it 
-    q_contact(i,:) = q0_contact; % collect in a N_limbxN_joint matrix
+    q_contact(i,:) = q0_contact;        % collect in a N_limb x N_joint matrix
 end
 
 % Plot the robot 
@@ -107,33 +106,42 @@ plot_robot_contact(ROBOT_CONTACT, q_contact);
 % I take as inertial frame the base-footprint center in the zero configuration
 T_base_footprint = eye(4,4);
 trplot(T_base_footprint, 'rgb', 'length', 0.1, 'arrow');
+% Initialize Base Homogeneus transformation
 T_base0 = transl(0,0,ROBOT_CONTACT(1).fkine(q_contact(1,:)).t(3));
 
-% plot the other useful frames
+% Initialize graphic handlers
 for i = 1:N_limb
-    h_root0{i} = trplot(eye(4));
+    h_root0{i} = trplot(eye(4)); 
 end
-h_base0 = trplot(eye(4));
+h_base0 = trplot(T_base0);
 h_patch0 = patch([0 0 0 0], [0 0 0 0], 'b');
+
+% Plot other useful frames (limb root, base) and base patch
 [T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q_contact, T_base0, W,L, h_root0, h_base0, h_patch0);
 
-% pause;
-% 
-% % check in new configuartion:
-% q_contact(1,:) = [0,0,0,0,-pi/6, 0, 0];
-% plot_robot_contact(ROBOT_CONTACT, q_contact);
-% [T_base, T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q_contact,W,L, h_root, h_base, h_patch);
-
 %% Experiment with Base manipulability Ellipsoid 
+% Compute Grasp matrix and then Ellipsoid core
 grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT_CONTACT, q_contact, grasp_matrix);
+% Plot ellipsoid, in the base frame
+h_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r', 'alpha', 0.6);
 
-pause 
+pause % Wait for user signal 
 %% Experiment with Base motion
-[q1_contact,T_base] = translate_base(ROBOT_CONTACT,T_base0, q_contact, 0.0, 0.0, -0.02);
+% 1) Translate the base
+% 2) Plot the new limbs configuration
+% 3) Move the useful frames and base patch
+[q1_contact,T_base] = translate_base(ROBOT_CONTACT,T_base0, q_contact, 0.0, -0.15, 0.0);
 plot_robot_contact(ROBOT_CONTACT, q1_contact);
 [T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q1_contact, T_base, W,L, h_root, h_base, h_patch);
 
+% Update Base Ellipsoid
+% Compute Grasp matrix and then Ellipsoid core
+grasp_matrix = compute_grasp_matrix(r_base);
+[E_base, Ja] = compute_base_ellipsoid(ROBOT_CONTACT, q_contact, grasp_matrix);
+% Plot ellipsoid, in the base frame, removing the previous one
+delete(h_ellipse);
+h_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -262,7 +270,7 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, W)
 
 end
 
-%% COMPUTE BASE MOTION CONFIGURATION
+%% COMPUTE BASE TRANSLATION
 % This function update the robot configuration and base homogeneus
 % transformation, accordingly to the desired base translation 
 % INPUT:
