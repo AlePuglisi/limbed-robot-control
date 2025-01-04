@@ -88,6 +88,7 @@ ROBOT_CONTACT = [LF_leg_contact, LH_leg_contact, RH_leg_contact, RF_leg_contact]
 
 q0_contact = zeros(1,N_link);
 for i = 1:N_limb
+    ROBOT_CONTACT(i).qlim(1,:) = [0 0]; % fix the driving joint to avoid using it 
     q_contact(i,:) = q0_contact; % collect in a N_limbxN_joint matrix
 end
 
@@ -100,6 +101,7 @@ plot_robot_contact(ROBOT_CONTACT, q_contact);
 % I take as inertial frame the base-footprint center in the zero configuration
 T_base_footprint = eye(4,4);
 trplot(T_base_footprint, 'rgb', 'length', 0.1, 'arrow');
+T_base0 = transl(0,0,ROBOT_CONTACT(1).fkine(q_contact(1,:)).t(3));
 
 % plot the other useful frames
 for i = 1:N_limb
@@ -107,7 +109,7 @@ for i = 1:N_limb
 end
 h_base0 = trplot(eye(4));
 h_patch0 = patch([0 0 0 0], [0 0 0 0], 'b');
-[T_base, T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q_contact,W,L, h_root0, h_base0, h_patch0);
+[T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q_contact, T_base0, W,L, h_root0, h_base0, h_patch0);
 
 % pause;
 % 
@@ -116,14 +118,24 @@ h_patch0 = patch([0 0 0 0], [0 0 0 0], 'b');
 % plot_robot_contact(ROBOT_CONTACT, q_contact);
 % [T_base, T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q_contact,W,L, h_root, h_base, h_patch);
 
+%% Experiment with Base manipulability Ellipsoid 
 grasp_matrix = compute_grasp_matrix(r_base);
-E_base = compute_base_ellipsoid(ROBOT_CONTACT, q_contact, grasp_matrix);
+[E_base, Ja] = compute_base_ellipsoid(ROBOT_CONTACT, q_contact, grasp_matrix);
 
-%% USEFUL FUNCTIONS IMPLEMENTATION
+pause 
+%% Experiment with Base motion
+[q1_contact,T_base] = translate_base(ROBOT_CONTACT,T_base0, q_contact, 0.05, 0.05, 0.0);
+plot_robot_contact(ROBOT_CONTACT, q1_contact);
+[T_limb_root, r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT_CONTACT, q1_contact, T_base, W,L, h_root, h_base, h_patch);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% USEFUL FUNCTIONS IMPLEMENTATION %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% FRAMES UPDATE
 % This function updates the visualization of limb_root and base frames
-function [T_base, T_limb_root,r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT, q, W, L, h_root_in, h_base_in, h_patch_in)
+function [T_limb_root,r_base, h_root, h_base, h_patch] = update_frames_contact(ROBOT, q, T_base, W, L, h_root_in, h_base_in, h_patch_in)
     N_limb = length(ROBOT);
     delete(h_patch_in);
     for i=1:N_limb
@@ -149,11 +161,8 @@ function [T_base, T_limb_root,r_base, h_root, h_base, h_patch] = update_frames_c
         r_base(i,:) = r_base_tilde(i,1:3);
     end
 
-    T_base = T_limb_root(:,:,1)*transl(-sqrt((W/2)^2+(L/2)^2), 0, 0)*trotz(-pi/4*180/pi);
+    %T_base = T_limb_root(:,:,1)*transl(-sqrt((W/2)^2+(L/2)^2), 0, 0)*trotz(-pi/4*180/pi);
     h_base = trplot(T_base, 'rgb', 'length', 0.1, 'arrow', 'framelabel', 'base');
-    base_x = T_base(1,4);
-    base_y = T_base(2,4);
-    base_z = T_base(3,4);
 
     h_patch = patch('XData',[T_limb_root(1,4,1), T_limb_root(1,4,2), T_limb_root(1,4,3), T_limb_root(1,4,4)],'YData',[T_limb_root(2,4,1), T_limb_root(2,4,2), T_limb_root(2,4,3), T_limb_root(2,4,4)],'ZData',[T_limb_root(3,4,1), T_limb_root(3,4,2), T_limb_root(3,4,3), T_limb_root(3,4,4)], 'FaceColor', 'b', 'FaceAlpha', 0.8);
 end
@@ -188,7 +197,7 @@ function grasp_matrix = compute_grasp_matrix(r)
 end
 
 %% COMPUTE BASE MANIPULABILITY CORE
-function base_ellipsoid = compute_base_ellipsoid(ROBOT, q, W)
+function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, W)
     N_limb = length(ROBOT); 
     N_joint = ROBOT(1).n;
     J_full = zeros(N_limb*6,N_limb*N_joint);
@@ -197,6 +206,23 @@ function base_ellipsoid = compute_base_ellipsoid(ROBOT, q, W)
     end
     Ja = (J_full'*pinv(W))';
     base_ellipsoid = Ja*Ja';
+
+end
+
+%% COMPUTE BASE MOTION CONFIGURATION
+function [q_contact, T_base] = translate_base(ROBOT,T_base,  q, x_motion, y_motion, z_motion)
+    N_limb = length(ROBOT);
+
+    t_ee = transl(x_motion, y_motion, z_motion);
+
+    for i = 1:N_limb
+        T_tool_base(:,:,i) = (ROBOT(i).fkine(q(i,:)).T)^-1*T_base;
+        R_tool_base(:,:,i) = T_tool_base(1:3,1:3,i);
+        t_ee_new = [R_tool_base(:,:,i), zeros(3,1); zeros(1,3), 1]*t_ee;
+        T_ee(:,:,i) = ROBOT(i).fkine(q(i,:)).T*transl(t_ee_new(1,4), t_ee_new(2,4), t_ee_new(3,4));
+        q_contact(i,:) = ROBOT(i).ikine(T_ee(:,:,i));
+    end
+    T_base = T_base*transl(x_motion, y_motion, z_motion);
 end
 
 
