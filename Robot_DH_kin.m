@@ -227,27 +227,27 @@ for i=1:sum(limbs_mask)
 end
 [E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limbero, q, limbs_mask, h_ellipses0);
 
-pause % Wait for user signal 
+%pause % Wait for user signal 
 %% Experiment with Base motion
-% 1) Translate the base
-% 2) Plot the new limbs configuration
-% 3) Move the useful frames and base patch
-[q1,T_base] = translate_base(ROBOT,T_base0, q, 0.1, 0.1, -0.01);
-plot_robot(ROBOT, q1);
-[T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT, q1, T_base, W,L, h_root, h_base, h_patch, h_support, h_CoM);
-
-%% Experiment with Base manipulability Ellipsoid 
-% Compute Grasp matrix and then Ellipsoid core
-grasp_matrix = compute_grasp_matrix(r_base);
-[E_base, Ja] = compute_base_ellipsoid(ROBOT, q1, grasp_matrix);
-% Plot ellipsoid, in the base frame
-delete(h_ellipse);
-h_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
-
-%% Experiment with limb manipulability Ellipsoid 
-% Initialization 
-limbs_mask = [1 1 1 1]; % Visualize all limbs ellipsoid
-[E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limbero, q1, limbs_mask, h_ellipses);
+% % 1) Translate the base
+% % 2) Plot the new limbs configuration
+% % 3) Move the useful frames and base patch
+% [q1,T_base] = translate_base(ROBOT,T_base0, q, 0.1, 0.1, -0.01);
+% plot_robot(ROBOT, q1);
+% [T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT, q1, T_base, W,L, h_root, h_base, h_patch, h_support, h_CoM);
+% 
+% %% Experiment with Base manipulability Ellipsoid 
+% % Compute Grasp matrix and then Ellipsoid core
+% grasp_matrix = compute_grasp_matrix(r_base);
+% [E_base, Ja] = compute_base_ellipsoid(ROBOT, q1, grasp_matrix);
+% % Plot ellipsoid, in the base frame
+% delete(h_ellipse);
+% h_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+% 
+% %% Experiment with limb manipulability Ellipsoid 
+% % Initialization 
+% limbs_mask = [1 1 1 1]; % Visualize all limbs ellipsoid
+% [E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limbero, q1, limbs_mask, h_ellipses);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -273,10 +273,12 @@ function Robot = Robot_model(limb, limb_contact, contact_mask, tool_length)
     q0_contact = zeros(1,limb.n); % zero joint configuration 
     tx_ee_contact = limb_contact.fkine(q0_contact).t(1); % x-coordinate of limb tool = limb length
     t = tx_ee_contact*sqrt(2)/2; % transaltion to move limb base to correct position
+
     T_LF_contact = transl(L/2+t, W/2+t, tool_length)*trotz(-(pi/2+pi/4)*180/pi)*limb_contact.base.T;
     T_LH_contact =  transl(-L/2-t, W/2+t, tool_length)*trotz(-(pi/4)*180/pi)*limb_contact.base.T;
     T_RH_contact =  transl(-L/2-t, -W/2-t, tool_length)*trotz((pi/4)*180/pi)*limb_contact.base.T;
     T_RF_contact =  transl(L/2+t, -W/2-t, tool_length)*trotz((pi/4+pi/2)*180/pi)*limb_contact.base.T;
+    
     T_contact(:,:,1) = T_LF_contact;
     T_contact(:,:,2) = T_LH_contact;
     T_contact(:,:,3) = T_RH_contact;
@@ -530,9 +532,10 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, W)
             q_new = [q_new; q(i,:)];
         end
     end
-
+    
     for i=1:N_limb_contact
-        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = ROBOT_CONTACT(i).jacob0(q_new(i,:));
+        % A change in the reference frame is needed, we use common origin jacobian  
+        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(ROBOT_CONTACT(i).base, 'samebody')*ROBOT_CONTACT(i).jacob0(q_new(i,:));
     end
 
     Ja = (J_full'*pinv(W))';
