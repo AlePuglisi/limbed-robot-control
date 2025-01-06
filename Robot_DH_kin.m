@@ -532,7 +532,7 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, W)
     end
 
     for i=1:N_limb_contact
-        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = ROBOT_CONTACT(i).jacobe(q_new(i,:));
+        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = ROBOT_CONTACT(i).jacob0(q_new(i,:));
     end
 
     Ja = (J_full'*pinv(W))';
@@ -586,7 +586,7 @@ function [E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limb, q, limbs_mask, h_e
    LIMBS = [];
    for i=1:N
        LIMBS = [LIMBS, SerialLink(limb, 'name', strcat('Limb', num2str(i)), 'gravity', [0;0;9.81])];
-       J(:,:,i) = LIMBS(i).jacobe(q_new(i,:));
+       J(:,:,i) = LIMBS(i).jacob0(q_new(i,:));
        E_limbs(:,:,i) = J(:,:,i)*J(:,:,i)';
        Et(:,:,i) = E_limbs(1:3,1:3,i);
        Er(:,:,i) = E_limbs(4:6,4:6,i);
