@@ -207,31 +207,48 @@ h_base0 = trplot(T_base0,'rgb', 'length', 0.1, 'arrow');
 h_CoM0 = plot3(0,0,0);
 h_patch0 = patch([0 0 0 0], [0 0 0 0], 'b');
 h_support0 = patch([0 0 0 0], [0 0 0 0], 'g');
+
 % Plot other useful frames (limb root, base) and base patch
 [T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT, q, T_base0, W,L, h_root0, h_base0, h_patch0, h_support0, h_CoM0);
 title('Robot Swing & Contact configuration');
-
-pause % Wait for user signal 
-%% Experiment with Base motion
-% 1) Translate the base
-% 2) Plot the new limbs configuration
-% 3) Move the useful frames and base patch
-[q1,T_base] = translate_base(ROBOT,T_base0, q, 0.10, 0.05, 0.01);
-plot_robot(ROBOT, q1);
-[T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT, q1, T_base, W,L, h_root, h_base, h_patch, h_support, h_CoM);
 
 %% Experiment with Base manipulability Ellipsoid 
 % Compute Grasp matrix and then Ellipsoid core
 grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT, q, grasp_matrix);
 % Plot ellipsoid, in the base frame
+h_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r', 'alpha', 0.6);
+
+%% Experiment with limb manipulability Ellipsoid 
+% Initialization 
+limbs_mask = [1 1 1 1]; % Visualize all limbs ellipsoid
+for i=1:sum(limbs_mask)
+    h_ellipses0{i} = plot_ellipse(eye(3));
+end
+[E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limbero, q, limbs_mask, h_ellipses0);
+
+pause % Wait for user signal 
+%% Experiment with Base motion
+% 1) Translate the base
+% 2) Plot the new limbs configuration
+% 3) Move the useful frames and base patch
+[q1,T_base] = translate_base(ROBOT,T_base0, q, 0.1, 0.1, -0.01);
+plot_robot(ROBOT, q1);
+[T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT, q1, T_base, W,L, h_root, h_base, h_patch, h_support, h_CoM);
+
+%% Experiment with Base manipulability Ellipsoid 
+% Compute Grasp matrix and then Ellipsoid core
+grasp_matrix = compute_grasp_matrix(r_base);
+[E_base, Ja] = compute_base_ellipsoid(ROBOT, q1, grasp_matrix);
+% Plot ellipsoid, in the base frame
+delete(h_ellipse);
 h_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
 
 %% Experiment with limb manipulability Ellipsoid 
 % Initialization 
 limbs_mask = [1 1 1 1]; % Visualize all limbs ellipsoid
-h_ellipses0 = plot_ellipse(eye(3));
-[E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limbero, q1, limbs_mask, h_ellipses0);
+[E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limbero, q1, limbs_mask, h_ellipses);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% USEFUL FUNCTIONS IMPLEMENTATION %%
@@ -300,16 +317,16 @@ function plot_robot(ROBOT, q)
     contacts = check_contact_limbs(ROBOT);
     for i = 1:N_limb
         if contacts(i) == 1
-            ROBOT(i).plot(q(i,:),'workspace', [-0.5 0.5 -0.5 0.5 0.0 0.5], 'noshadow', 'notiles', 'scale', 0.6); 
+            ROBOT(i).plot(q(i,:),'workspace', [-0.8 0.8 -0.8 0.8 -0.1 0.6], 'noshadow', 'notiles', 'scale', 0.6); 
         elseif contacts(i) == 0
-            ROBOT(i).plot(q(i,:),'workspace', [-0.5 0.5 -0.5 0.5 0.0 0.5], 'noshadow','nobase', 'notiles', 'scale', 0.6); 
+            ROBOT(i).plot(q(i,:),'workspace', [-0.8 0.8 -0.8 0.8 -0.1 0.6], 'noshadow','nobase', 'notiles', 'scale', 0.5); 
         end
     end
     
     % Set axis limits manually to ensure the entire robot is visible
-    xlim([-0.6 0.6]);  % Set x-axis limits
-    ylim([-0.6 0.6]);  % Set y-axis limits
-    zlim([ 0.0 0.6]);  % Set z-axis limits
+    xlim([-0.8 0.8]);  % Set x-axis limits
+    ylim([-0.8 0.8]);  % Set y-axis limits
+    zlim([ -0.1 0.6]);  % Set z-axis limits
     
     % Set equal aspect ratio to avoid distortion
     axis equal; 
@@ -541,10 +558,12 @@ end
 % To compute the ellipsoid, I use the swing model of limb object
 % (SerialLink), 
 function [E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limb, q, limbs_mask, h_ellipses_in)
-   % Clear ellipse visualization
-   delete(h_ellipses_in);
    % define useful parameters
    N = sum(limbs_mask);
+   % Clear ellipse visualization
+   for i=1:N
+    delete(h_ellipses_in{i});
+   end
    N_limb = length(ROBOT);
    contacts = check_contact_limbs(ROBOT);
    % reorganize configuration and robot
