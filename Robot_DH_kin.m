@@ -74,7 +74,7 @@ pause % Wait for user signal
 % 1) Translate the base
 % 2) Plot the new limbs configuration
 % 3) Move the useful frames and base patch
-[q1,T_base] = translate_base(ROBOT_SWING,T_base0, q, 0.0, -0.1, 0.0);
+[q1,T_base] = translate_base(ROBOT_SWING,limbero, T_base0, q, 0.0, -0.1, 0.0);
 plot_robot(ROBOT_SWING, q1);
 [T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT_SWING, q1, T_base, W,L, h_root, h_base, h_patch, h_support, h_CoM);
 
@@ -150,11 +150,11 @@ pause % Wait for user signal
 % 1) Translate the base
 % 2) Plot the new limbs configuration
 % 3) Move the useful frames and base patch
-[q1_contact,T_base] = translate_base(ROBOT_CONTACT,T_base0, q_contact, 0.0, -0.15, 0.0);
+[q1_contact,T_base] = translate_base(ROBOT_CONTACT,limbero, T_base0, q_contact, 0.1, 0.0, 0.0);
 plot_robot(ROBOT_CONTACT, q1_contact);
 [T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT_CONTACT, q1_contact, T_base, W,L, h_root, h_base, h_patch, h_support, h_CoM);
 
-% Update Base Ellipsoid
+%% Update Base Ellipsoid
 % Compute Grasp matrix and then Ellipsoid core
 grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT_CONTACT, q_contact, grasp_matrix);
@@ -167,7 +167,7 @@ pause
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% CONTACT & SWING LMBS %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-close all
+%close all
 
 ROBOT = Robot_model(limbero,limbero_contact, [0 1 1 1], tool_length+0.02);
 
@@ -178,7 +178,7 @@ for i=1:N_limb
     if contacts(i) == 1
         q(i,:) = q0_contact;
     elseif contacts(i) == 0
-        q(i,:) = q0_swing;
+        q(i,:) = q0_contact;
 
     end
 end
@@ -232,7 +232,7 @@ end
 % % 1) Translate the base
 % % 2) Plot the new limbs configuration
 % % 3) Move the useful frames and base patch
-% [q1,T_base] = translate_base(ROBOT,T_base0, q, 0.1, 0.1, -0.01);
+% [q1,T_base] = translate_base(ROBOT,limbero, T_base0, q, 0.1, 0.1, -0.01);
 % plot_robot(ROBOT, q1);
 % [T_limb_root, r_base, h_root, h_base, h_patch, h_support, h_CoM] = update_frames(ROBOT, q1, T_base, W,L, h_root, h_base, h_patch, h_support, h_CoM);
 % 
@@ -331,7 +331,7 @@ function plot_robot(ROBOT, q)
     zlim([ -0.1 0.6]);  % Set z-axis limits
     
     % Set equal aspect ratio to avoid distortion
-    axis equal; 
+    % axis equal; 
     title('Robot zero configuration, Contact limbs');
 end
 
@@ -449,8 +449,9 @@ end
 % - T_base    = New 4x4 Homomgeneus Transformation, base wrt fixed frame,
 %               after translation
 
-function [q_new, T_base] = translate_base(ROBOT,T_base_in,  q, x_motion, y_motion, z_motion)
+function [q_new, T_base] = translate_base(ROBOT,limb_swing, T_base_in,  q, x_motion, y_motion, z_motion)
     N_limb = length(ROBOT);
+    new_limb = SerialLink(limb_swing, 'name', 'Limb_{Swing}');
     % check which limbs are in contact
     contacts = check_contact_limbs(ROBOT);
 
@@ -459,11 +460,25 @@ function [q_new, T_base] = translate_base(ROBOT,T_base_in,  q, x_motion, y_motio
 
     for i = 1:N_limb
         if contacts(i) == 1 % only contacts limb move the base
-            T_tool_base(:,:,i) = (ROBOT(i).fkine(q(i,:)).T)^-1*T_base;
+            q_swing(i,:) = flip(q(i,:));
+            q_swing(i,3) = q_swing(i,3) + pi/2;
+            new_limb.tool = trotz(pi*180/pi);
+            new_limb.base = ROBOT(i).fkine(q(i,:));
+
+            t_ee_new = -t_ee;
+            T_tool_base(:,:,i) = (new_limb.fkine(q_swing(i,:)).T)^-1*T_base
             R_tool_base(:,:,i) = T_tool_base(1:3,1:3,i);
-            t_ee_new = [R_tool_base(:,:,i), zeros(3,1); zeros(1,3), 1]*t_ee;
-            T_ee(:,:,i) = ROBOT(i).fkine(q(i,:)).T*transl(t_ee_new(1,4), t_ee_new(2,4), t_ee_new(3,4));
-            q_new(i,:) = ROBOT(i).ikine(T_ee(:,:,i));
+            t_ee_new = [R_tool_base(:,:,i), zeros(3,1); zeros(1,3), 1]*t_ee_new;
+            
+
+            T_ee(:,:,i) = new_limb.fkine(q_swing(i,:)).T*transl(t_ee_new(1,4), t_ee_new(2,4), t_ee_new(3,4));
+            T_ee(1:3,1:3,i) = ROBOT(i).base.R
+            %q_new(i,:) = ROBOT(i).ikine(T_ee(:,:,i));
+            q_swing(i,:) = new_limb.ikine(T_ee(:,:,i), q_swing(i,:));
+
+            q_swing(i,3) = q_swing(i,3)-pi/2;
+            q_new(i,:) = flip(q_swing(i,:));
+          
         elseif contacts(i) == 0 % limbs not in contact move with the base
             t0 = (ROBOT(i).base.R)'*T_base_in(1:3,1:3)*t_ee(1:3,4);
             ROBOT(i).base = ROBOT(i).base.T * transl(t0(1), t0(2), t0(3));
@@ -535,7 +550,9 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, W)
     
     for i=1:N_limb_contact
         % A change in the reference frame is needed, we use common origin jacobian  
-        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(ROBOT_CONTACT(i).base, 'samebody')*ROBOT_CONTACT(i).jacob0(q_new(i,:));
+        
+        %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(ROBOT_CONTACT(i).base, 'samebody')*ROBOT_CONTACT(i).jacob0(q_new(i,:));
+        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = ROBOT_CONTACT(i).jacob0(q_new(i,:));
     end
 
     Ja = (J_full'*pinv(W))';
@@ -572,28 +589,39 @@ function [E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, limb, q, limbs_mask, h_e
    % reorganize configuration and robot
    q_new = [];
    t_ee_new = [];
+   R = []
    for i=1:N_limb
-       if contacts(i) == 0
-           t_ee(i,:) = ROBOT(i).fkine(q(i,:)).t;
-       elseif contacts(i) == 1
+       if contacts(i) == 1
            t_ee(i,:) = ROBOT(i).base.t;
+           R(:,:,i) = ROBOT(i).fkine(q(i,:)).R
+           if limbs_mask(i) == 1
+               q_swing = flip(q(i,:));
+               q_swing(3) = q_swing(3) + pi/2;
+               q_new = [q_new; q_swing]
+               t_ee_new = [t_ee_new; t_ee(i,:)];
+           end
+       elseif contacts(i) == 0
+           R(:,:,i) = ROBOT(i).base.R
+           t_ee(i,:) = ROBOT(i).fkine(q(i,:)).t;
+           if limbs_mask(i) == 1
+              q_new = [q_new; q(i,:)];
+              t_ee_new = [t_ee_new; t_ee(i,:)];
+           end
        end
-       if limbs_mask(i) == 1
-          q_new = [q_new; q(i,:)];
-          t_ee_new = [t_ee_new, t_ee(i,:)];
-       end
+
    end
     
    % redefine limbs as arm-type model and compute allipsoid based on
    % jacobian
+
    LIMBS = [];
    for i=1:N
-       LIMBS = [LIMBS, SerialLink(limb, 'name', strcat('Limb', num2str(i)), 'gravity', [0;0;9.81])];
+       LIMBS = [LIMBS, SerialLink(limb, 'name', strcat('Limb_', num2str(i)), 'gravity', [0;0;9.81], 'base', [R(:,:,i) zeros(3,1); zeros(1,3) 1])];
        J(:,:,i) = LIMBS(i).jacob0(q_new(i,:));
        E_limbs(:,:,i) = J(:,:,i)*J(:,:,i)';
        Et(:,:,i) = E_limbs(1:3,1:3,i);
        Er(:,:,i) = E_limbs(4:6,4:6,i);
-       h_ellipses{i} = plot_ellipse(Et(:,:,i)*0.0625, t_ee(i,:), 'g', 'alpha', 0.6);
+       h_ellipses{i} = plot_ellipse(Et(:,:,i)*0.0625, t_ee_new(i,:), 'g', 'alpha', 0.6);
    end
    
 end
