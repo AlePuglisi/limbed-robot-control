@@ -9,6 +9,8 @@
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <Eigen/Eigenvalues> 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "visualization_msgs/msg/marker.hpp"
@@ -51,7 +53,7 @@ private:
    * @param Jacobian
    * @param type      // 0: velocity translation, 1: velocity rotation 
    */
-  std::array<float, 3> computeEllipsoidRadi(Eigen::Matrix<double, 6, JOINT_NUM> Jacobian, int type);
+  Eigen::Matrix<double, 3, 4>  computeEllipsoidRadi(Eigen::Matrix<double, 6, JOINT_NUM> Jacobian, int type);
 
   sensor_msgs::msg::JointState current_joint_state; // store current joint state 
 
