@@ -13,6 +13,7 @@
 %               after translation
 
 function [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_in, x_motion, y_motion, z_motion)
+    disp("Translating Base by x = " + num2str(x_motion) + " | y = " + num2str(y_motion) + " | z = " + num2str(z_motion) + " ( in Base Frame)");
     N_limb = length(ROBOT);
     % check which limbs are in contact
     contacts = check_contact_limbs(ROBOT);
@@ -29,7 +30,12 @@ function [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_in, x_motion, y_m
             T_tool_base = (T_tool.T)^-1*T_base_in; 
             t_tool = T_tool_base(1:3,1:3)*-t_base(1:3,4);
             T_0_tool = T_tool.T*transl(t_tool(1), t_tool(2), t_tool(3));
-            q_new(i,:) = ROBOT(i).ikine(T_0_tool, 'q0', q_in(i,:), 'mask', [1 1 1 0 0 0]);
+            if ROBOT(i).n >= 6
+                Mask = [1 1 1 1 1 1];
+            elseif ROBOT(i).n < 6
+                Mask = [1 1 1 0 0 0];
+            end
+            q_new(i,:) = ROBOT(i).ikine(T_0_tool, 'q0', q_in(i,:), 'mask', Mask);
         elseif contacts(i) == 0 % limbs not in contact move with the base
             t0 = (ROBOT(i).base.R)'*T_base_in(1:3,1:3)*t_base(1:3,4);
             ROBOT(i).base = ROBOT(i).base.T * transl(t0(1), t0(2), t0(3));

@@ -48,7 +48,8 @@ function [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = u
             h_root{i} = trplot(T_limb_root(:,:,i), 'rgb', 'length', 0.15, 'arrow');
             
             T = transl(-sqrt((W/2)^2+(L/2)^2), 0, 0);
-            r_base(i,:) = T_base(1:3,1:3)^-1*(T_limb_root(1:3,1:3,i)*T(1:3,4));
+            %r_base(i,:) = T_base(1:3,1:3)^-1*(T_limb_root(1:3,1:3,i)*T(1:3,4));
+            r_base(i,:) = ROBOT(i).base.t';
 
             t_support = [t_support; ROBOT(i).fkine(q(i,:)).t'];
 

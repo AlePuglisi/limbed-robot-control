@@ -10,7 +10,7 @@
 
 % OUTPUT:
 % - Robot        = Robot model 
-function Robot = Robot_model(W, L, limb, contact_mask, T_tool)
+function Robot = Robot_model(W, L, limb, q0_contact_swing,  contact_mask, T_tool)
     N_limb = length(contact_mask);
     g = [0; 0; 9.81];             % Gravity vector
 
@@ -30,7 +30,7 @@ function Robot = Robot_model(W, L, limb, contact_mask, T_tool)
 %     T_contact(:,:,4) = T_RF_contact;  
 
     % Homogeneus Transformations for Base to Limbroot position SWING MODE
-    q0_contact_swing = [0,0,pi/2];
+
     tz_ee = limb.fkine(q0_contact_swing).t(3); % z-coordinate of limb tool = limb height
     T_LF = transl(L/2, W/2, -tz_ee)*trotz(pi/4*180/pi);
     T_LH =  transl(-L/2, W/2, -tz_ee)*trotz((pi/2+pi/4)*180/pi);

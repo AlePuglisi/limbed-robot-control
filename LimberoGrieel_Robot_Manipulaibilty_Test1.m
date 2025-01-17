@@ -21,7 +21,7 @@ g = [0; 0; 9.81]; % Gravity vector
 q_contact = [0,0,pi/2,0,0,0,0];
 
 %%%%%%%%%%%%%%%%%%%%%%
-%% SWING LEGS MODEL %%
+%% SWING LEGS MODELq0_contact_swing %%
 %%%%%%%%%%%%%%%%%%%%%%
 
 % Homogeneus Transformations for Base to Limbroot position
