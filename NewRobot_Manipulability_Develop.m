@@ -137,9 +137,9 @@ pause
 for i=1:5
     pause
     % MOVE THE BASE AGAIN
-    x_motion = 0.0; 
+    x_motion = -0.03; 
     y_motion = 0.0; 
-    z_motion = 0.01; 
+    z_motion = 0.0; 
     T_base_in = T_base;
     [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
     % Update graphics 
