@@ -3,7 +3,6 @@ clear
 clc
 close all 
 
-% This is a 3DOF Antropomorphic arm 
 % SWING
 load('limbero_data');
 
@@ -52,7 +51,8 @@ clear h_root0 h_base0 h_CoM0 h_base_poly0 h_support0
 grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT, q0_contact, grasp_matrix, T_base0);
 % Plot ellipsoid, in the base frame
-h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r', 'alpha', 0.6);
+% h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r', 'alpha', 0.6);
+ h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
@@ -82,7 +82,8 @@ grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT, q_new, grasp_matrix, T_base);
 % Plot ellipsoid, in the base frame
 delete(h_base_ellipse);
-h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+% h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
@@ -107,7 +108,8 @@ grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT, q_new, grasp_matrix, T_base);
 % Plot ellipsoid, in the base frame
 delete(h_base_ellipse);
-h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+% h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
@@ -132,7 +134,8 @@ for i=1:15
     [E_base, Ja] = compute_base_ellipsoid(ROBOT, q_new, grasp_matrix, T_base);
     % Plot ellipsoid, in the base frame
     delete(h_base_ellipse);
-    h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+    % h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+    h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
     
     m = sqrt(det(E_base));
     disp(m)
@@ -140,6 +143,6 @@ for i=1:15
 
     % LIMB MANIPULABILITY ELLIPSOID
     % Initialization 
-    limbs_mask = [1 0 0 0]; % Visualize limbs ellipsoid
+    limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
     [E_limbs, h_limb_ellipses] = limb_ellipsoids(ROBOT, q_new, limbs_mask, h_limb_ellipses);
 end

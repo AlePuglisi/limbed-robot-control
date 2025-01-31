@@ -499,6 +499,7 @@ end
 %% Save usefull data in a mat file: 
 tool_length = d7;
 save('limbero_data', 'limbero', 'limbero_contact', 'limbero_urdf', 'tool_length');
+save('limbero_controller', 'a', 'd', 'alpha', 'offset', 'masses', 'r_cm', 'T_lpf', 'T_vel', 'Tc', 'kpp', 'kpv', 'Tiv');
 
 
 
