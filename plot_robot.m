@@ -4,7 +4,6 @@
 % - q     = current limbs configuration, as an [N_limb x N_joint] matrix
 function plot_robot(ROBOT, q)
     N_limb = length(ROBOT);
-    
     for i = 1:N_limb
            ROBOT(i).plot(q(i,:),'workspace', [-0.8 0.8 -0.8 0.8 -0.1 0.6], 'noshadow','nobase', 'notiles', 'scale', 0.6); 
     end
