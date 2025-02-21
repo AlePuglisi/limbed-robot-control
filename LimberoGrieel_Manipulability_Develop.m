@@ -12,7 +12,7 @@ Limb = limbero;
 N_limb = 4; 
 W = 0.45; 
 L = 0.45; 
-T_tool = trotx(pi/2*180/pi)*troty(pi/2*180/pi)*trotz(pi/2*180/pi);
+T_tool = trotx(pi/2)*troty(pi/2)*trotz(pi/2);
 q0_contact_swing = [0, 0, pi/2, 0, 0, 0, 0];
 ROBOT = Robot_model(W, L, Limb, q0_contact_swing, [1 1 1 1], T_tool);
 
