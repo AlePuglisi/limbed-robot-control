@@ -9,7 +9,7 @@
 %                    descriped  by v*(E)^-1*v'<=1
 % -Ja              = corresponding grasp Jacobian matrix, relating joint speed to base absolute speed
                
-function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, grasp_matrix, T_base)
+function [base_ellipsoid,Ja] = compute_base_ellipsoid_scaled(ROBOT, q, grasp_matrix, T_base, Q)
     N_limb = length(ROBOT); 
     N_joint = ROBOT(1).n;
     contacts = check_contact_limbs(ROBOT);
@@ -24,7 +24,7 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, grasp_matrix, T_
             q_new = [q_new; q(i,:)];
         end
     end
-
+    
     for i=1:N_limb
          if contacts(i) == 1
             % A change in the reference frame is needed, we use common origin jacobian  
@@ -42,7 +42,9 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, grasp_matrix, T_
             J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = zeros(6,N_joint)
          end
     end
-    
+
+    J_full = J_full * Q; 
+
     Ja = (J_full'*pinv(grasp_matrix))';
     base_ellipsoid = Ja*Ja';
 

@@ -18,9 +18,14 @@ function grasp_matrix = compute_grasp_matrix(r)
         end
     end
     r_new
-    for i=1:length(r_new)
-        R(:,:,i) = [0 -r_new(i,3) r_new(i,2); r_new(i,3) 0 -r_new(i,1); -r_new(i,2) r_new(i,1) 0];
-        W(:,:,i) = [eye(3), zeros(3,3); R(:,:,i), eye(3)];
-        grasp_matrix = [grasp_matrix, W(:,:,i)];
+    for i=1:length(r)
+        if r(i,1) == 0 & r(i,2) == 0  & r(i,3) == 0    
+            W(:,:,i) = zeros(6,6);
+            grasp_matrix = [grasp_matrix, W(:,:,i)];
+        else
+            R(:,:,i) = [0 -r(i,3) r(i,2); r(i,3) 0 -r(i,1); -r(i,2) r(i,1) 0];
+            W(:,:,i) = [eye(3), zeros(3,3); R(:,:,i), eye(3)];
+            grasp_matrix = [grasp_matrix, W(:,:,i)];
+        end
     end
 end
