@@ -17,7 +17,7 @@ function grasp_matrix = compute_grasp_matrix(r)
             r_new = [r_new; r(i,:)];
         end
     end
-    r_new
+    r_new;
     for i=1:length(r)
         if r(i,1) == 0 & r(i,2) == 0  & r(i,3) == 0    
             W(:,:,i) = zeros(6,6);

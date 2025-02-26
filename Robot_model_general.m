@@ -1,0 +1,67 @@
+
+% This function return the Robot model as an array of SerialLink objects,
+% each one as a limb. 
+% INPUT: 
+% - W            = Base width
+% - L            = Base Length
+% - limb         = SerialLink object to use as limb in swing mode
+% - contact_mask = logic array indicating which limb is in contact and
+%                  which one not
+
+% OUTPUT:
+% - Robot        = Robot model 
+function Robot = Robot_model_general(W, L, Limbs,limbs_place, limbs_angle, q0_contact_swing,  contact_mask, T_tool)
+    N_limb = length(contact_mask);
+    g = [0; 0; 9.81];             % Gravity vector
+
+    % Homogeneus Transformations for Base to Limbroot position CONTACT MODE
+%     q0_contact = zeros(1,limb.n); % zero joint configuration 
+%     tx_ee_contact = limb_contact.fkine(q0_contact).t(1); % x-coordinate of limb tool = limb length
+%     t = tx_ee_contact*sqrt(2)/2; % transaltion to move limb base to correct position
+% 
+%     T_LF_contact = transl(L/2+t, W/2+t, tool_length)*trotz(-(pi/2+pi/4)*180/pi)*limb_contact.base.T;
+%     T_LH_contact =  transl(-L/2-t, W/2+t, tool_length)*trotz(-(pi/4)*180/pi)*limb_contact.base.T;
+%     T_RH_contact =  transl(-L/2-t, -W/2-t, tool_length)*trotz((pi/4)*180/pi)*limb_contact.base.T;
+%     T_RF_contact =  transl(L/2+t, -W/2-t, tool_length)*trotz((pi/4+pi/2)*180/pi)*limb_contact.base.T;
+%     
+%     T_contact(:,:,1) = T_LF_contact;
+%     T_contact(:,:,2) = T_LH_contact;
+%     T_contact(:,:,3) = T_RH_contact;
+%     T_contact(:,:,4) = T_RF_contact;  
+
+    % Homogeneus Transformations for Base to Limbroot position SWING MODE
+    names = [];
+    for i=1:N_limb/2
+            tz_ee = Limbs(i).fkine(q0_contact_swing(i,:)).t(3); % z-coordinate of limb tool = limb height
+           %T_limbs(:,:,i) = transl(L/2-limbs_place(i), W/2, -tz_ee)*trotz(limbs_angle(i));
+          T_limbs(:,:,i) = transl(L/2-limbs_place(i), W/2, 0)*trotz(limbs_angle(i));
+           names(i,:) = ['limbL', num2str(i)];
+    end
+    for i=N_limb/2+1:N_limb
+            tz_ee = Limbs(i-N_limb/2).fkine(q0_contact_swing(i-N_limb/2,:)).t(3); % z-coordinate of limb tool = limb height
+           %T_limbs(:,:,i) = transl(L/2-limbs_place(i-N_limb/2), -W/2, -tz_ee)*trotz(-limbs_angle(i-N_limb/2));
+            T_limbs(:,:,i) = transl(L/2-limbs_place(i-N_limb/2), -W/2, 0)*trotz(-limbs_angle(i-N_limb/2));
+            names(i,:) = ['limbR', num2str(i-N_limb/2)];
+    end
+
+    for i=1:N_limb
+        T(:,:,i) = T_limbs(:,:,i);
+    end
+
+    Robot = [];
+    for i=1:N_limb/2
+         if contact_mask(i) == 0
+            Robot = [Robot, SerialLink(Limbs(i),'name',  strcat(names(i,:)), 'gravity', g, 'base', T(:,:,i), 'tool', T_tool)];
+         elseif contact_mask(i) == 1
+            Robot = [Robot, SerialLink(Limbs(i),'name', strcat(names(i,:),'_{contact}'), 'gravity', g, 'base', T(:,:,i), 'tool', T_tool)];
+         end
+    end
+    for i=N_limb/2+1:N_limb
+         if contact_mask(i) == 0
+            Robot = [Robot, SerialLink(Limbs(i-N_limb/2),'name',  strcat(names(i,:)), 'gravity', g, 'base', T(:,:,i), 'tool', T_tool)];
+         elseif contact_mask(i) == 1
+            Robot = [Robot, SerialLink(Limbs(i-N_limb/2),'name', strcat(names(i,:),'_{contact}'), 'gravity', g, 'base', T(:,:,i), 'tool', T_tool)];
+         end
+    end
+    
+end

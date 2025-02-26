@@ -11,19 +11,23 @@
                
 function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, grasp_matrix, T_base)
     N_limb = length(ROBOT); 
-    N_joint = ROBOT(1).n;
     contacts = check_contact_limbs(ROBOT);
     N_limb_contact = sum(contacts);
 
-    J_full = zeros(N_limb_contact*6,N_limb_contact*N_joint);
     ROBOT_CONTACT = [];
     q_new = [];
+    N_joint = 0;
+    n_joint = [];
     for i=1:N_limb
+        N_joint = N_joint + ROBOT(i).n;
+        n_joint(i) = ROBOT(i).n;
         if contacts(i) == 1
             ROBOT_CONTACT = [ROBOT_CONTACT, ROBOT(i)];
             q_new = [q_new; q(i,:)];
         end
     end
+  
+    J_full = zeros(N_limb*6,N_limb*N_joint);
 
     for i=1:N_limb
          if contacts(i) == 1
@@ -36,7 +40,7 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, grasp_matrix, T_
             
     
             %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = -tr2jac(T_base)*ROBOT(i).jacob0(q_new(i,:));
-            J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = -tr2jac(T_ee_base)*ROBOT(i).jacobe(q(i,:));
+            J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*n_joint(i):n_joint(i)+(i-1)*n_joint(i)) = -tr2jac(T_ee_base)*ROBOT(i).jacobe(q(i,:));
             %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(T_ee_0)*ROBOT(i).jacobe(q_new(i,:));
          else
             J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = zeros(6,N_joint)

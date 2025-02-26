@@ -39,7 +39,7 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid_scaled(ROBOT, q, grasp_mat
             J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = -tr2jac(T_ee_base)*ROBOT(i).jacobe(q(i,:));
             %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(T_ee_0)*ROBOT(i).jacobe(q_new(i,:));
          else
-            J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = zeros(6,N_joint)
+            J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = zeros(6,N_joint);
          end
     end
 

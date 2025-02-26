@@ -13,7 +13,7 @@ N_limb = 4;
 W = 0.25; 
 L = 0.25; 
 T_tool = trotx(pi/2)*troty(pi/2)*trotz(pi/2);
-q0_contact_swing = [0, 0, pi/2, 0, 0, 0, 0];
+q0_contact_swing = [0, -pi/6, pi/2+pi/6, 0, 0, 0, 0];
 ROBOT = Robot_model(W, L, Limb, q0_contact_swing, [1 1 1 1], T_tool);
 
 %% INITIALIZE and PLOT
@@ -23,11 +23,19 @@ q0 = zeros(N_limb,Limb.n);
 q0_wheel = q0;
 q0_contact = q0; 
 for i=1:N_limb
-    q0_contact(i,3) = pi/2;
+    q0_contact(i,2) = -pi/6;
+    q0_contact(i,3) = pi/2+pi/6;
+    q0_contact(i,6) = pi/2;
+
     q0_wheel(i,3) = pi/2;
     q0_wheel(i,5) = pi;
     q0_wheel(i,6) = pi/2;
 end
+
+q0_contact(1,5) = pi-pi/4;
+q0_contact(2,5) = pi+pi/4;
+q0_contact(3,5) = pi-pi/4;
+q0_contact(4,5) = pi+pi/4;
 
 wheel = 0;
 if wheel == 1

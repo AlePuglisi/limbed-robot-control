@@ -10,6 +10,13 @@ d1 = 0.1;
 
 a = [0, a2, a3];
 d = [d1, 0, 0];
+
+% REDEFINE 
+a1 = 0.1;
+a = [a1, a2, a3];
+d = [0,0,0];
+
+
 alpha = [-pi/2, 0, 0];
 offset = [0, 0, 0];
 
@@ -27,7 +34,7 @@ Limb.gravity = [0; 0; 9.81]; % gravity acceleration vector expressed in the base
 N_limb = 4; 
 W = 0.45; 
 L = 0.45; 
-T_tool = trotx(pi/2*180/pi)*troty(pi/2*180/pi)*trotz(pi/2*180/pi);
+T_tool = trotx(pi/2)*troty(pi/2)*trotz(pi/2);
 q0_contact_swing = [0,0,pi/2];
 ROBOT = Robot_model(W, L, Limb,q0_contact_swing, [1 1 1 1], T_tool);
 
@@ -98,7 +105,7 @@ grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT, q_new, grasp_matrix, T_base);
 % Plot ellipsoid, in the base frame
 delete(h_base_ellipse);
-h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
@@ -183,7 +190,7 @@ grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid(ROBOT, q_new, grasp_matrix, T_base);
 % Plot ellipsoid, in the base frame
 delete(h_base_ellipse);
-h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
