@@ -25,18 +25,21 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid(ROBOT, q, grasp_matrix, T_
         end
     end
 
-    for i=1:N_limb_contact
+    for i=1:N_limb
         % A change in the reference frame is needed, we use common origin jacobian  
         
         %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(ROBOT_CONTACT(i).base, 'samebody')*ROBOT_CONTACT(i).jacob0(q_new(i,:));
-     
-        T_ee_base = (ROBOT_CONTACT(i).fkine(q_new(i,:)).T)^-1*T_base;
-        T_ee_0 = (ROBOT_CONTACT(i).fkine(q_new(i,:)).T)^-1; %*ROBOT_CONTACT(i).base.T;
-        
-
-        %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = -tr2jac(T_base)*ROBOT_CONTACT(i).jacob0(q_new(i,:));
-        J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = -tr2jac(T_ee_base)*ROBOT_CONTACT(i).jacobe(q_new(i,:));
-        %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(T_ee_0)*ROBOT_CONTACT(i).jacobe(q_new(i,:));
+        if contacts(i) == 0 
+            J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = zeros(6,N_joint);
+        else
+            T_ee_base = (ROBOT(i).fkine(q(i,:)).T)^-1*T_base;
+            T_ee_0 = (ROBOT(i).fkine(q(i,:)).T)^-1; %*ROBOT_CONTACT(i).base.T;
+            
+    
+            %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = -tr2jac(T_base)*ROBOT(i).jacob0(q_new(i,:));
+            J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = -tr2jac(T_ee_base)*ROBOT(i).jacobe(q(i,:));
+            %J_full(1+(i-1)*6:6+(i-1)*6, 1+(i-1)*N_joint:N_joint+(i-1)*N_joint) = tr2jac(T_ee_0)*ROBOT(i).jacobe(q_new(i,:));
+        end
     end
 
     Ja = (J_full'*pinv(grasp_matrix))';
