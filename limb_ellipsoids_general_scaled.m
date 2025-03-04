@@ -40,7 +40,7 @@ function [E_limbs, h_ellipses] = limb_ellipsoids(ROBOT, q_in, limbs_mask, h_elli
            Er(:,:,i) = E_limbs(4:6,4:6,i);
            t_ee = ROBOT(i).fkine(q_in(i,:)).t ;        
            %h_ellipses{i} = plot_ellipse(Et(:,:,i)*0.0625, t_ee', color(i), 'alpha', 0.4);
-           h_ellipses{i} = plotEllipsoidLines(15*Et(:,:,i)^-1, t_ee', color(i));
+           h_ellipses{i} = plotEllipsoidLines(10*Et(:,:,i)^-1, t_ee', color(i));
            m = sqrt(det(E_limbs(:,:,i)));
            mt = sqrt(det(Et(:,:,i)));
            str = strcat("Lim ",names(i,:) ,"  Translational Manipulability mt = ", num2str(mt));

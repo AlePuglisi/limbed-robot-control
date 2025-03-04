@@ -41,21 +41,23 @@ end
 W = 0.10; 
 L = 0.50; 
 T_tool = trotx(pi/2)*troty(pi/2)*trotz(pi/2);
-limbs_place = [0.05, 0.15, 0.30];
-limbs_angle = [pi/6, pi/2+pi/3, pi-pi/10];
+limbs_place = [0.05, 0.15, 0.25];
+limbs_angle = [pi/6, pi/2+pi/3, pi];
 
 q0 = [];
 q0(1,:) = [0, -30*pi/180, (180-60)*pi/180];
 q0(2,:) = [0, -30*pi/180, (180-60)*pi/180];
-q0(3,:) = [0, -15*pi/180, (180-10)*pi/180];
+q0(3,:) = [-15*pi/180, -40*pi/180, (180-20)*pi/180];
 
-ROBOT = Robot_model_general(W, L, Limbs, limbs_place,limbs_angle, q0, [1 1 1 1 1 1], T_tool);
+ROBOT = Robot_model_general(W, L, Limbs, limbs_place,limbs_angle, q0, [1 1 0 1 1 1], T_tool);
 
 %% INITIALIZE and PLOT
-figure('Name', 'Robot DH')
+figure('Name', 'Grasshopper kinematic model')
 hold on 
 
 q0 = [q0; q0];
+q0(6,1) = - q0(3,1);
+
 % Plot Robot
 plot_robot(ROBOT, q0);
 
@@ -75,17 +77,18 @@ h_base_poly0 = plot3(zero_N,zero_N,zero_N);
 h_support0 = plot3(zero_N, zero_N, zero_N);
 
 % Create graphics 
-[T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT, q0, T_base0, W, L, h_root0, h_base0, h_base_poly0, h_support0, h_CoM0);
+[T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames_general(ROBOT, q0, T_base0, W, L, h_root0, h_base0, h_base_poly0, h_support0, h_CoM0);
 clear h_root0 h_base0 h_CoM0 h_base_poly0 h_support0
 
     for i=1:N_limb
         delete(h_root{i}); % limbs root frames 
     end
+delete(h_CoM);
 
 %% LIMIT 
 q_dot_lim_1 = [0.8, 0.8, 0.8];
 q_dot_lim_2 = [0.8, 0.8, 0.8];
-q_dot_lim_3 = [1.0, 1.0, 4.0];
+q_dot_lim_3 = [1.0, 1.0, 5.0];
 
 q_dot_lim = [q_dot_lim_1, q_dot_lim_2, q_dot_lim_3, q_dot_lim_1, q_dot_lim_2, q_dot_lim_3];
 Q_lim = diag(q_dot_lim);

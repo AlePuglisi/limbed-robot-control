@@ -4,14 +4,16 @@ clc
 close all 
 % This is a 3DOF Antropomorphic arm 
 % SWING
-a2 = 0.3; 
-a3 = 0.4; 
+a1 = 0.0;
+a2 = 0.35; 
+a3 = 0.35; 
 d1 = 0.1; 
 
 a = [0, a2, a3];
 d = [d1, 0, 0];
 alpha = [-pi/2, 0, 0];
 offset = [0, 0, 0];
+
 
 % Generate the link object associated with the robot model (DH param); 
 L1 = Link('d', d(1), 'a', a(1), 'alpha', alpha(1), 'offset', offset(1)); % coxa
@@ -28,29 +30,32 @@ N_limb = 4;
 W = 0.45; 
 L = 0.45; 
 T_tool = trotx(pi/2)*troty(pi/2)*trotz(pi/2);
-q0_contact_swing = [0,0,pi/2];
+q0_contact_swing = [0,-pi/6,pi*2/3];
 ROBOT = Robot_model(W, L, Limb,q0_contact_swing, [1 1 1 1], T_tool);
 
 %% DEFINE  SCALING MATRIX 
-q_dot_lim_i = [1.5, 2, 3];
+q_dot_lim_i = [0.8, 1.8, 2.5];
 q_dot_lim = [];
 for i=1:N_limb
     q_dot_lim = [q_dot_lim, q_dot_lim_i];
 end
 Q_lim = diag(q_dot_lim);
 
+%Q_lim = eye(N_limb*ROBOT(1).n);
+
 %% INITIALIZE and PLOT
 q0 = zeros(N_limb,Limb.n);
 q0_contact = q0; 
 for i=1:N_limb
-    q0_contact(i,3) = pi/2;
+    q0_contact(i,2) = -pi/6;
+    q0_contact(i,3) = pi*2/3;
 end
-
+q0 = q0_contact;
 figure('Name', 'Robot DH')
 hold on 
 
 % Plot Robot
-plot_robot(ROBOT, q0_contact);
+plot_robot(ROBOT, q0);
 
 %% PLOT FRAMES 
 
@@ -67,7 +72,7 @@ h_support0 = plot3([0 0 0 0 0],[0 0 0 0 0],[0 0 0 0 0]);
 
 
 % Create graphics 
-[T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT, q0_contact, T_base0, W, L, h_root0, h_base0, h_base_poly0, h_support0, h_CoM0);
+[T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT, q0, T_base0, W, L, h_root0, h_base0, h_base_poly0, h_support0, h_CoM0);
 clear h_root0 h_base0 h_CoM0 h_base_poly0 h_support0
 
 %% BASE MANIPULABILITY ELLIPSOID 
@@ -77,7 +82,7 @@ grasp_matrix = compute_grasp_matrix(r_base);
 % Plot ellipsoid, in the base frame
 
 %h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r', 'alpha', 0.6);
-h_base_ellipse = plotEllipsoidLines(10*E_base(1:3,1:3)^-1,[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r');
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base0(1,4), T_base0(2,4), T_base0(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
@@ -94,7 +99,7 @@ pause
 %% MOVE THE BASE 
 x_motion = 0.0; 
 y_motion = 0.0; 
-z_motion = -0.15; 
+z_motion = 0.15; 
 T_base_in = T_base0;
 [q_new, T_base] = translate_base(ROBOT, T_base_in,  q0_contact, x_motion, y_motion, z_motion);
 % Update graphics 
@@ -107,19 +112,19 @@ grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
 % Plot ellipsoid, in the base frame
 delete(h_base_ellipse);
-h_base_ellipse = plotEllipsoidLines(10*E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
-limbs_mask = [1 1 1 0]; % Visualize limbs ellipsoid
+limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
 [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
 
 pause 
 
 %% MOVE THE BASE AGAIN
-x_motion = -0.0; 
-y_motion = -0.0; 
-z_motion = 0.05; 
+x_motion = 0.0; 
+y_motion = 0.0; 
+z_motion = 0.0; 
 T_base_in = T_base;
 [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
 % Update graphics 
@@ -133,46 +138,74 @@ grasp_matrix = compute_grasp_matrix(r_base);
 % Plot ellipsoid, in the base frame
 delete(h_base_ellipse);
 %h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
-h_base_ellipse = plotEllipsoidLines(10*E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
 
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
-limbs_mask = [1 0 0 0]; % Visualize limbs ellipsoid
+limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
 [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
 
 pause
 %% SEQUENTIAL MOTION 
-for i=1:8
-    pause
-    % MOVE THE BASE AGAIN
-    x_motion = 0.0; 
-    y_motion = 0.0; 
-    z_motion = 0.05; 
-    T_base_in = T_base;
-    [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
-    % Update graphics 
-    plot_robot(ROBOT, q_new);
-    [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT,q_new, T_base, W, L, h_root, h_base, h_base_poly, h_support, h_CoM);
-    
-    % BASE MANIPULABILITY ELLIPSOID 
-    % Compute Grasp matrix and then Ellipsoid core
-    grasp_matrix = compute_grasp_matrix(r_base);
-    [E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
-    % Plot ellipsoid, in the base frame
-     delete(h_base_ellipse);
-%    h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
-     h_base_ellipse = plotEllipsoidLines(10*E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
-    
+% for i=1:8
+%     pause
+%     % MOVE THE BASE AGAIN
+%     x_motion = 0.0; 
+%     y_motion = 0.0; 
+%     z_motion = 0.05; 
+%     T_base_in = T_base;
+%     [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
+%     % Update graphics 
+%     plot_robot(ROBOT, q_new);
+%     [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT,q_new, T_base, W, L, h_root, h_base, h_base_poly, h_support, h_CoM);
+% 
+%     % BASE MANIPULABILITY ELLIPSOID 
+%     % Compute Grasp matrix and then Ellipsoid core
+%     grasp_matrix = compute_grasp_matrix(r_base);
+%     [E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
+%     % Plot ellipsoid, in the base frame
+%      delete(h_base_ellipse);
+% %    h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+%      h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
+% 
+% 
+%     % LIMB MANIPULABILITY ELLIPSOID
+%     % Initialization 
+%     limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
+%     [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses,Q_lim);
+% end
+% 
+% 
+% pause
 
-    % LIMB MANIPULABILITY ELLIPSOID
-    % Initialization 
-    limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
-    [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses,Q_lim);
-end
+%% MOVE THE BASE AGAIN
+x_motion = 0.0; 
+y_motion = 0.0; 
+z_motion = 0.0; 
+T_base_in = T_base;
+[q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
+% Update graphics 
+plot_robot(ROBOT, q_new);
+[T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT,q_new, T_base, W, L, h_root, h_base, h_base_poly, h_support, h_CoM);
 
+%% BASE MANIPULABILITY ELLIPSOID 
+% Compute Grasp matrix and then Ellipsoid core
+grasp_matrix = compute_grasp_matrix(r_base);
+[E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
+% Plot ellipsoid, in the base frame
+delete(h_base_ellipse);
+%h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
+
+
+%% LIMB MANIPULABILITY ELLIPSOID
+% Initialization 
+limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
+[E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
 
 pause
+
 %% RISE ROBOT LF LIMB 
 i_rise = 1; % 1=LF, 2=LH, 3=RH, 4=RF
 limb_names = ["LF*"; "LH*"; "RH*"; "RF*"];
@@ -192,7 +225,7 @@ grasp_matrix = compute_grasp_matrix(r_base);
 [E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
 % Plot ellipsoid, in the base frame
 delete(h_base_ellipse);
-h_base_ellipse = plotEllipsoidLines(10*E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
 
 %% LIMB MANIPULABILITY ELLIPSOID
 % Initialization 
@@ -200,34 +233,58 @@ limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
 [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
 
 % SEQUENTIAL MOTION 
-for i=1:5
-    pause
-    % MOVE THE BASE AGAIN
-    x_motion = -0.02; 
-    y_motion = -0.02; 
-    z_motion = 0.02; 
-    T_base_in = T_base;
-    [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
-    % Update graphics 
-    plot_robot(ROBOT, q_new);
-    [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT,q_new, T_base, W, L, h_root, h_base, h_base_poly, h_support, h_CoM);
-    
-    % BASE MANIPULABILITY ELLIPSOID 
-    % Compute Grasp matrix and then Ellipsoid core
-    grasp_matrix = compute_grasp_matrix(r_base);
-    [E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
-    % Plot ellipsoid, in the base frame
-     delete(h_base_ellipse);
-%    h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
-     h_base_ellipse = plotEllipsoidLines(10*E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
-    
+% for i=1:5
+%     pause
+%     % MOVE THE BASE AGAIN
+%     x_motion = -0.02; 
+%     y_motion = -0.02; 
+%     z_motion = 0.02; 
+%     T_base_in = T_base;
+%     [q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
+%     % Update graphics 
+%     plot_robot(ROBOT, q_new);
+%     [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT,q_new, T_base, W, L, h_root, h_base, h_base_poly, h_support, h_CoM);
+% 
+%     % BASE MANIPULABILITY ELLIPSOID 
+%     % Compute Grasp matrix and then Ellipsoid core
+%     grasp_matrix = compute_grasp_matrix(r_base);
+%     [E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
+%     % Plot ellipsoid, in the base frame
+%      delete(h_base_ellipse);
+% %    h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+%      h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
+% 
+% 
+%     % LIMB MANIPULABILITY ELLIPSOID
+%     % Initialization 
+%     limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
+%     [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
+% end
 
-    % LIMB MANIPULABILITY ELLIPSOID
-    % Initialization 
-    limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
-    [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
-end
+%% MOVE THE BASE 
+x_motion = -0.10; 
+y_motion = -0.10; 
+z_motion = 0.0; 
+T_base_in = T_base;
+[q_new, T_base] = translate_base(ROBOT, T_base_in,  q_new, x_motion, y_motion, z_motion);
+% Update graphics 
+plot_robot(ROBOT, q_new);
+[T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT,q_new, T_base, W, L, h_root, h_base, h_base_poly, h_support, h_CoM);
 
+%% BASE MANIPULABILITY ELLIPSOID 
+% Compute Grasp matrix and then Ellipsoid core
+grasp_matrix = compute_grasp_matrix(r_base);
+[E_base, Ja] = compute_base_ellipsoid_scaled(ROBOT, q_new, grasp_matrix, T_base, Q_lim);
+% Plot ellipsoid, in the base frame
+delete(h_base_ellipse);
+%h_base_ellipse = plot_ellipse(E_base(1:3,1:3),[T_base(1,4), T_base(2,4), T_base(3,4)], 'r', 'alpha', 0.6);
+h_base_ellipse = plotEllipsoidLines(E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
+
+
+%% LIMB MANIPULABILITY ELLIPSOID
+% Initialization 
+limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
+[E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
 
 
 

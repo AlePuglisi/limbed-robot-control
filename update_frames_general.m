@@ -18,7 +18,7 @@
 % - h_patch     = New handle to base patch graphic
 % - h_support   = New handle to support polygon patch graphic
 
-function [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames(ROBOT, q, T_base, W, L, h_root_in, h_base_in, h_base_poly_in, h_support_in, h_CoM_in)
+function [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames_general(ROBOT, q, T_base, W, L, h_root_in, h_base_in, h_base_poly_in, h_support_in, h_CoM_in)
     % count limbs
     N_limb = length(ROBOT);
     % check which limbs are in contact
@@ -45,7 +45,7 @@ function [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = u
     for i = 1:N_limb
         if contacts(i) == 1
             T_limb_root(:,:,i) = ROBOT(i).base; % when not in contact, limb root coincide with limb base
-            h_root{i} = trplot(T_limb_root(:,:,i), 'rgb', 'length', 0.15, 'arrow');
+            h_root{i} = trplot(T_limb_root(:,:,i), 'rgb', 'length', 0.1, 'arrow', 'width', 0.5, 'thick', 0.6);
             
             %T = transl(-sqrt((W/2)^2+(L/2)^2), 0, 0);
             T_base_frame = T_base^-1*T_limb_root(:,:,i);
@@ -56,15 +56,17 @@ function [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = u
 
         elseif contacts(i) == 0
             T_limb_root(:,:,i) = ROBOT(i).base; % when not in contact, limb root coincide with limb base
-            h_root{i} = trplot(T_limb_root(:,:,i), 'rgb', 'length', 0.15, 'arrow');
+            h_root{i} = trplot(T_limb_root(:,:,i), 'rgb', 'length', 0.1, 'arrow', 'width', 0.5, 'thick', 0.6);
             % No need to compute root to base radius, because no
             % contribution to the grasp matrix is given by this limb
             r_base(i,:) = zeros(1,3);
         end
     end
     
-    h_base = trplot(T_base, 'rgb', 'length', 0.15, 'arrow', 'framelabel', 'base');
+    h_base = trplot(T_base, 'rgb', 'length', 0.08, 'arrow', 'width', 0.5, 'thick', 0.6 );
     
+
+
     x_root = [];
     y_root = [];
     z_root = [];
@@ -72,16 +74,22 @@ function [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = u
         x_root = [x_root, T_limb_root(1,4,i)];
         y_root = [y_root, T_limb_root(2,4,i)];
         z_root = [z_root, T_limb_root(3,4,i)];
-    end
-    x_root = [x_root, T_limb_root(1,4,1)];
+    end    
+    
+    x_root = [x_root(1:3), x_root(6), x_root(5), x_root(4)];
+    y_root = [y_root(1:3), y_root(6), y_root(5), y_root(4)];
+    z_root = [z_root(1:3), z_root(6), z_root(5), z_root(4)];
+   x_root = [x_root, T_limb_root(1,4,1)];
     y_root = [y_root, T_limb_root(2,4,1)];
     z_root = [z_root, T_limb_root(3,4,1)];
 
-    h_base_poly = plot3(x_root,y_root,z_root, 'Color', 'r', 'LineWidth', 1.0);
-    
+    %t_support = [t_support(1:3,:);  t_support(6,:); t_support(5,:); t_support(4,:) ];
+    t_support = [t_support(1,:); t_support(2,:); t_support(3,:)];
+
+    h_base_poly = plot3(x_root,y_root,z_root, 'Color', 'r', 'LineWidth', 1.5);
     % Plot support polygon
     if N_limb_contact > 1
-        h_support = plot3([t_support(:,1)', t_support(1,1)],[t_support(:,2)', t_support(1,2)],[t_support(:,3)', t_support(1,3)], 'Color', 'g', 'LineWidth', 1.0);
+        h_support = plot3([t_support(:,1)', t_support(1,1)],[t_support(:,2)', t_support(1,2)],[t_support(:,3)', t_support(1,3)], 'Color', 'g', 'LineWidth', 1.5);
     end
 
     % Plot CoM Projection

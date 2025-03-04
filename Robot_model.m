@@ -41,7 +41,7 @@ function Robot = Robot_model(W, L, limb, q0_contact_swing,  contact_mask, T_tool
     T(:,:,3) = T_RH;
     T(:,:,4) = T_RF;
     
-    names = ['LF*'; 'LH*'; 'RH*'; 'RF*'];
+    names = ['LF'; 'LH'; 'RH'; 'RF'];
     Robot = [];
     for i=1:N_limb
          if contact_mask(i) == 0

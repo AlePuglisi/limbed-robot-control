@@ -4,8 +4,8 @@ clc
 close all 
 % This is a 3DOF Antropomorphic arm 
 % SWING
-a2 = 0.3; 
-a3 = 0.4; 
+a2 = 0.35; 
+a3 = 0.35; 
 d1 = 0.1; 
 
 a = [0, a2, a3];
@@ -35,17 +35,22 @@ N_limb = 4;
 W = 0.45; 
 L = 0.45; 
 T_tool = trotx(pi/2)*troty(pi/2)*trotz(pi/2);
-q0_contact_swing = [0,0,pi/2];
-ROBOT = Robot_model(W, L, Limb,q0_contact_swing, [1 1 1 1], T_tool);
 
-%% INITIALIZE and PLOT
 q0 = zeros(N_limb,Limb.n);
 q0_contact = q0; 
 for i=1:N_limb
-    q0_contact(i,3) = pi/2;
+    q0_contact(i,2) = -pi/6;
+    q0_contact(i,3) = pi/2+pi/6;
 end
 
-figure('Name', 'Robot DH')
+q0_contact_swing = [0,0,pi/2];
+
+ROBOT = Robot_model(W, L, Limb,q0_contact(1,:), [1 1 1 1], T_tool);
+
+%% INITIALIZE and PLOT
+
+
+figure('Name', '4-Limbed (3-DOF limb)')
 hold on 
 
 % Plot Robot
@@ -173,11 +178,11 @@ end
 pause
 %% RISE ROBOT LF LIMB 
 i_rise = 1; % 1=LF, 2=LH, 3=RH, 4=RF
-limb_names = ["LF*"; "LH*"; "RH*"; "RF*"];
+limb_names = ["LF"; "LH"; "RH"; "RF"];
 ROBOT(i_rise).name = limb_names(i_rise, :);
 
 close all
-figure('Name','Robot DH')
+figure('Name', '4-Limbed (3-DOF limb)')
 hold on 
 q_new = move_limb(ROBOT, q_new, i_rise, 0, 0, 0.15);
 plot_robot(ROBOT, q_new);

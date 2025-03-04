@@ -10,6 +10,9 @@
 % - z = z motion of the limb in world coordinates
 function q_new = move_limb(ROBOT, q_in, i_limb, x, y, z)
     names = ["LF"; "LH"; "RH"; "RF"];
+    if length(ROBOT)
+        names = ["LF"; "LM"; "LB"; "RF"; "RM"; "RB"];
+    end
     disp("Moving Limb " + names(i_limb,:) + " by x = " + num2str(x) + " | y = " + num2str(y) + " | z = " + num2str(z) + " (in World Frame)");
     t_limb = (ROBOT(i_limb).fkine(q_in(i_limb, :)).R)' * (ROBOT(i_limb).base.R)' *  [x y z]'
     T_ee_tool = transl(t_limb(1), t_limb(2), t_limb(3));

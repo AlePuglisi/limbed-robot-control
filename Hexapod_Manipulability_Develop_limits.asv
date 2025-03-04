@@ -181,18 +181,15 @@ pause
 %% RISE ROBOT LF LIMB 
 i_rise1 = 1; % 1=LF, 2=LM, 3=LB, 4=RF, 5=RM, 6=RB
 i_rise2 = 3;
-i_rise3 = 5;
 limb_names = ["LF*"; "LM*";"LB*"; "RF*"; "RM*";"RB*" ];
 ROBOT(i_rise1).name = limb_names(i_rise1, :);
 ROBOT(i_rise2).name = limb_names(i_rise2, :);
-ROBOT(i_rise3).name = limb_names(i_rise3, :);
 
 close all
 figure('Name','Robot DH')
 hold on 
 q_new = move_limb(ROBOT, q_new, i_rise1, 0, 0, 0.15);
 q_new = move_limb(ROBOT, q_new, i_rise2, 0, 0, 0.15);
-q_new = move_limb(ROBOT, q_new, i_rise3, 0, 0, 0.15);
 plot_robot(ROBOT, q_new);
 
 [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = update_frames_general(ROBOT,q_new, T_base, W, L, h_root, h_base, h_base_poly, h_support, h_CoM);

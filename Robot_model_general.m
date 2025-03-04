@@ -31,17 +31,18 @@ function Robot = Robot_model_general(W, L, Limbs,limbs_place, limbs_angle, q0_co
 
     % Homogeneus Transformations for Base to Limbroot position SWING MODE
     names = [];
+    names_suffix = ['F', 'M', 'B'];
     for i=1:N_limb/2
             tz_ee = Limbs(i).fkine(q0_contact_swing(i,:)).t(3); % z-coordinate of limb tool = limb height
            %T_limbs(:,:,i) = transl(L/2-limbs_place(i), W/2, -tz_ee)*trotz(limbs_angle(i));
-          T_limbs(:,:,i) = transl(L/2-limbs_place(i), W/2, 0)*trotz(limbs_angle(i));
-           names(i,:) = ['limbL', num2str(i)];
+          T_limbs(:,:,i) = transl(L/2-limbs_place(i), W/2, -tz_ee)*trotz(limbs_angle(i));
+           names(i,:) = ['L', names_suffix(i)];
     end
     for i=N_limb/2+1:N_limb
             tz_ee = Limbs(i-N_limb/2).fkine(q0_contact_swing(i-N_limb/2,:)).t(3); % z-coordinate of limb tool = limb height
            %T_limbs(:,:,i) = transl(L/2-limbs_place(i-N_limb/2), -W/2, -tz_ee)*trotz(-limbs_angle(i-N_limb/2));
-            T_limbs(:,:,i) = transl(L/2-limbs_place(i-N_limb/2), -W/2, 0)*trotz(-limbs_angle(i-N_limb/2));
-            names(i,:) = ['limbR', num2str(i-N_limb/2)];
+            T_limbs(:,:,i) = transl(L/2-limbs_place(i-N_limb/2), -W/2, -tz_ee)*trotz(-limbs_angle(i-N_limb/2));
+            names(i,:) = ['R', names_suffix(i-N_limb/2)];
     end
 
     for i=1:N_limb

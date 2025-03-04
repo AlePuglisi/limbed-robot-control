@@ -5,7 +5,7 @@
 function plot_robot(ROBOT, q)
     N_limb = length(ROBOT);
     for i = 1:N_limb
-           ROBOT(i).plot(q(i,:),'workspace', [-0.8 0.8 -0.8 0.8 -0.1 0.6], 'noshadow','nobase', 'notiles', 'scale', 0.6); 
+           ROBOT(i).plot(q(i,:),'workspace', [-0.8 0.8 -0.8 0.8 -0.1 0.6], 'noshadow','nobase', 'notiles','noname', 'scale', 0.6); 
     end
     
     % Set axis limits manually to ensure the entire robot is visible
@@ -15,5 +15,4 @@ function plot_robot(ROBOT, q)
     
     % Set equal aspect ratio to avoid distortion
     % axis equal; 
-    title('Robot DH Model');
 end
