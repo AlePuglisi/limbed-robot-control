@@ -18,12 +18,22 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid_scaled(ROBOT, q, grasp_mat
     J_full = zeros(N_limb_contact*6,N_limb_contact*N_joint);
     ROBOT_CONTACT = [];
     q_new = [];
+
+    q_boundary = [];
+    Q_boundary = [];
+
     for i=1:N_limb
-        if contacts(i) == 1
-            ROBOT_CONTACT = [ROBOT_CONTACT, ROBOT(i)];
-            q_new = [q_new; q(i,:)];
+        for j=1:(ROBOT(i).n-1)
+            q_lim_half = (ROBOT(i).qlim(j,2) + ROBOT(i).qlim(j,1))/2;
+            if(q(i,j) >= q_lim_half)
+                q_boundary(i,j) = (ROBOT(i).qlim(j,2) - q(i,j))/(ROBOT(i).qlim(j,2) - ROBOT(i).qlim(j,1));
+            else 
+                q_boundary(i,j) = abs(q(i,j) - ROBOT(i).qlim(j,1))/(ROBOT(i).qlim(j,2) - ROBOT(i).qlim(j,1));
+            end          
         end
+        q_boundary(i,7) = 1;
     end
+    Q_boundary = diag([q_boundary(1,:), q_boundary(2,:), q_boundary(3,:), q_boundary(4,:)])
     
     for i=1:N_limb
          if contacts(i) == 1
@@ -43,7 +53,7 @@ function [base_ellipsoid,Ja] = compute_base_ellipsoid_scaled(ROBOT, q, grasp_mat
          end
     end
 
-    J_full = J_full * Q; 
+    J_full = J_full * Q*Q_boundary; 
 
     Ja = (J_full'*pinv(grasp_matrix))';
     base_ellipsoid = Ja*Ja';
