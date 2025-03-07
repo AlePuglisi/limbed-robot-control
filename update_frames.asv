@@ -87,8 +87,8 @@ function [T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = u
     % Plot CoM Projection
     x_com = T_base(1,4);
     y_com = T_base(2,4);
-    z_avg = sum(t_support(:,3))/N_limb_contact;
-    z_com = z_avg;
+    z_avg = 
+    z_com = 0;
     h_CoM = plot3(x_com, y_com, z_com,'o','Color','#FF6E00','MarkerSize',10,'MarkerFaceColor','#FF6E00');
 
 end
