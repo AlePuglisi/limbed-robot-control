@@ -1,5 +1,11 @@
 function [q_new, T_base, T_limb_root,r_base, h_root, h_base, h_base_poly, h_support, h_CoM] = GRIEEL_transform(ROBOT, Mode, W,  L,  q, T_base_in,T_root_in, r_base_in, h_root_in, h_base_in, h_base_poly_in, h_support_in, h_CoM_in, Q_lim)
 
+axis_x_l= -0.6; 
+axis_x_u= 0.6;
+axis_y_l= -0.6; 
+axis_y_u= 0.6;
+axis_z_l= -0.25; 
+axis_z_u= 0.6;
 N_contact = sum(check_contact_limbs(ROBOT));
 N_limb = length(ROBOT);
 if(N_contact < N_limb)
@@ -89,6 +95,8 @@ pause()
 close all
 
 
+use_support_center = 0; 
+
 for i = limb_seqence
 
     current_limb_name = limb_names(limb_seqence(i),:);
@@ -135,7 +143,9 @@ for i = limb_seqence
     next_support = contact_points;
     next_support(i,:) = [];
     h_next_support = plot3([next_support(:,1)', next_support(1,1)],[next_support(:,2)', next_support(1,2)],[next_support(:,3)', next_support(1,3)], 'LineStyle', ' - - ', 'Color', 'b','LineWidth', 1.5);
-    
+       
+    axis([axis_x_l axis_x_u axis_y_l axis_y_u axis_z_l axis_z_u]);
+
     mid_next_support = [];
     mid_next_support(1) = sum(next_support(:,1) - T_base(1,4))/3;
     mid_next_support(2) = sum(next_support(:,2) - T_base(2,4))/3;
@@ -157,6 +167,12 @@ for i = limb_seqence
     
     base = [base_x, base_y, 0];
     base = T_base(1:3,1:3)*base';
+
+    if use_support_center == 1
+        base = [mid_next_support(1), mid_next_support(2), 0];
+        base = T_base(1:3,1:3)*base';
+    end
+
     disp(" ")
    disp("press ENTER for base motion")
    disp(" ")
@@ -206,6 +222,9 @@ for i = limb_seqence
     next_support(i,:) = [];
     h_next_support = plot3([next_support(:,1)', next_support(1,1)],[next_support(:,2)', next_support(1,2)],[next_support(:,3)', next_support(1,3)], 'LineStyle', ' - - ',  'Color', 'b', 'LineWidth', 1.5);
     disp(" ")
+
+    axis([axis_x_l axis_x_u axis_y_l axis_y_u axis_z_l axis_z_u]);
+
     disp(strcat("press ENTER for Limb ",  current_limb_name , " Raise"))
     disp(" ")
     pause()
@@ -254,7 +273,8 @@ for i = limb_seqence
     % Initialization 
     limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
     [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
-    
+     
+    axis([axis_x_l axis_x_u axis_y_l axis_y_u axis_z_l axis_z_u]);
 
      disp("press ENTER for limb down")
      pause( )   
@@ -305,7 +325,9 @@ for i = limb_seqence
        sprintf('\\bfSSM Normalized [%%]:\\rm %.2f', SSM_normalized)};
    delete(a);
     a = annotation('textbox',dim,'String',str,'FontSize', 20, 'FitBoxToText','on', 'Interpreter', 'tex');
-    
+        
+    axis([axis_x_l axis_x_u axis_y_l axis_y_u axis_z_l axis_z_u]);
+
     disp("press ENTER for next step")
 
      pause()
@@ -331,7 +353,8 @@ delete(h_base_ellipse);
 h_base_ellipse = plotEllipsoidLines(9*E_base(1:3,1:3)^-1,[T_base(1,4), T_base(2,4), T_base(3,4)], 'r');
    
 contact_mask = check_contact_limbs(ROBOT);
-SSM_index = SSM(ROBOT, q_new, contact_mask, T_base, normalized);
+SSM_index = SSM(ROBOT, q_new, contact_mask, T_base, 0);
+SSM_normalized = SSM(ROBOT, q_new, contact_mask, T_base, 1);
 disp(strcat('Current SSM: ', num2str(SSM_index)));
 
 str = {sprintf('\\bfSSM [m]:\\rm %.2f', SSM_index), 
@@ -345,6 +368,9 @@ a = annotation('textbox',dim,'String',str,'FontSize', 20, 'FitBoxToText','on', '
 % Initialization 
 limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
 [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
+
+axis([axis_x_l axis_x_u axis_y_l axis_y_u axis_z_l axis_z_u]);
+
 disp("press ENTER for base Centering")
 pause()
 
@@ -385,7 +411,8 @@ limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
 [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
 
 contact_mask = check_contact_limbs(ROBOT);
-SSM_index = SSM(ROBOT, q_new, contact_mask, T_base, normalized);
+SSM_index = SSM(ROBOT, q_new, contact_mask, T_base, 0);
+SSM_normalized = SSM(ROBOT, q_new, contact_mask, T_base, 1);
 disp(strcat('Current SSM: ', num2str(SSM_index)));
 
 str = {sprintf('\\bfSSM [m]:\\rm %.2f', SSM_index), 
@@ -393,8 +420,7 @@ str = {sprintf('\\bfSSM [m]:\\rm %.2f', SSM_index),
 delete(a);
 a = annotation('textbox',dim,'String',str,'FontSize', 20, 'FitBoxToText','on', 'Interpreter', 'tex');
 
-
-
+axis([axis_x_l axis_x_u axis_y_l axis_y_u axis_z_l axis_z_u]);
 
 %% DRIVING MODE 
 
@@ -425,7 +451,8 @@ limbs_mask = [1 1 1 1]; % Visualize limbs ellipsoid
 [E_limbs, h_limb_ellipses] = limb_ellipsoids_general_scaled(ROBOT, q_new, limbs_mask, h_limb_ellipses, Q_lim);
 
 contact_mask = check_contact_limbs(ROBOT);
-SSM_index = SSM(ROBOT, q_new, contact_mask, T_base, normalized);
+SSM_index = SSM(ROBOT, q_new, contact_mask, T_base, 0);
+SSM_normalized = SSM(ROBOT, q_new, contact_mask, T_base, 1);
 disp(strcat('Current SSM: ', num2str(SSM_index)));
 
 str = {sprintf('\\bfSSM [m]:\\rm %.2f', SSM_index), 
@@ -433,3 +460,4 @@ str = {sprintf('\\bfSSM [m]:\\rm %.2f', SSM_index),
 delete(a);
 a = annotation('textbox',dim,'String',str,'FontSize', 20, 'FitBoxToText','on', 'Interpreter', 'tex');
 
+axis([axis_x_l axis_x_u axis_y_l axis_y_u axis_z_l axis_z_u]);

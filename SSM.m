@@ -22,7 +22,7 @@ function StaticStabilityMargin = SSM(ROBOT, q, contact_mask, T_base, normalized)
 
     if normalized == 1
         t_support = [];
-        q0 = q;
+        q0 = zeros(N_limb,7);
         for i=1:N_limb
             q0(i,3) = pi/6 + pi/2; 
             q0(i,2) = -pi/6; 

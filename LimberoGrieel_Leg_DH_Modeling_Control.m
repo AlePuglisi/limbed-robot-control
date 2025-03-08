@@ -237,7 +237,7 @@ L_contact = [L1_contact, L2_contact, L3_contact, L4_contact, L5_contact, L6_cont
 %% ROBOT INITIALIZATION
 limbero_contact = SerialLink(L_contact);
 limbero_contact.name = 'LIMBERO_{contact}';
-limbero_contact.base = trotx(pi*180/pi);
+limbero_contact.base = trotx(pi);
 limbero_contact.gravity = [0; 0; 9.81]; % gravity acceleration vector expressed in the base frame 
 
 %% DYNAMIC IDENTIFICATION 
@@ -248,7 +248,7 @@ config_contact = [0, 0, pi/2, 0, 0, 0, 0];
 % To make the transformation from URDF to DH, an additional intermediate
 % transformation is needed, because of the different reference frame. 
 % T_0_dh2urdf = (limbero_urdf.getTransform(config_contact, 'LF_gripper_Link')*transl(0,0,-d7))\limbero_urdf.getTransform(config_contact, 'LF_coxa');
-T_0dh_coxaurdf_contact = limbero_contact.A(1:6,qz).T*trotz(pi*180/pi);
+T_0dh_coxaurdf_contact = limbero_contact.A(1:6,qz).T*trotz(pi);
 
 % coxa
 T_dh_coxa_contact = T_0dh_coxaurdf_contact\limbero_contact.A(1:7, qz).T;
@@ -344,9 +344,10 @@ end
 
 %%  PLOT LIMBERO+GRIEEL contact model 
 figure('Name', 'LIMBERO LF LEG, CONTACT DH (Gripper-coxa)')
-limbero_contact.plot([0, 0, 0, 0, 0, 0, 0], 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jvec', 'nobase', 'noshadow', 'notiles');
+q0_contact = [0 0 0 0 -pi/6 pi/6 0];
+limbero_contact.plot(q0_contact, 'workspace', [-1 1 -1 1 -1 1], 'view', [30 30], 'scale', 0.6,'jvec', 'nobase', 'noshadow', 'notiles');
 title('Limbero+Grieel LF limb DH, contact (q = qz)')
-
+limbero_contact.gravload(q0_contact)
 % revert z and y axis for a proper visualization
 % set(gca, 'Zdir', 'reverse');
 % set(gca, 'Ydir', 'reverse');
