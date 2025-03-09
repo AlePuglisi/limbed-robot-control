@@ -97,6 +97,10 @@ for i=1:N_limbs
     end
 end
 
+% Plot Robot
+disp("--------------------------------------")
+disp("PRESS ENTER TO START VIEW ROBOT MODEL:")
+pause()
 
 %% PLOT THE ROBOT DH MODEL 
 % SWING
@@ -178,7 +182,7 @@ limb_names_contact = ["LF_{contact}"; "LH_{contact}"; "RH_{contact}"; "RF_{conta
 
 % Plot Robot
 disp("--------------------------------------")
-disp("PRESS ENTER TO START:")
+disp("PRESS ENTER TO START MOTION:")
 pause()
 
 SSM_signal = [];
