@@ -101,6 +101,7 @@ Mode = "W";
 
 pause();
 
+
 %% MOVE THE BASE 
 x_motion = -0.2; 
 y_motion = 0.1; 
