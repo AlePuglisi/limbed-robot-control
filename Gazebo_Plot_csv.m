@@ -4,26 +4,37 @@ close all
 
 %% READ BAG csv results: 
 
-LF = csvread("data_experiments_simulation/ExperimentG2W/LF_joint_data.csv",1,0);
-LH = csvread("data_experiments_simulation/ExperimentG2W/LH_joint_data.csv",1,0);
-RH = csvread("data_experiments_simulation/ExperimentG2W/RH_joint_data.csv",1,0);
-RF = csvread("data_experiments_simulation/ExperimentG2W/RF_joint_data.csv",1,0);
+file = "G2W";
+
+path = "data_experiments_simulation/Harmonic_sim/";
+if strcmp(file,"G2W")
+    path = strcat(path, "G2W/");
+elseif strcmp(file,"W2G")
+    path = strcat(path, "W2G/");
+elseif strcmp(file,"drive")
+    path = strcat(path, "Driving_3Wheel/");
+end
+
+LF = csvread(strcat(path, "LF_joint_data.csv"),1,0);
+LH = csvread(strcat(path, "LH_joint_data.csv"),1,0);
+RH = csvread(strcat(path,"RH_joint_data.csv"),1,0);
+RF = csvread(strcat(path,"RF_joint_data.csv"),1,0);
 
 [numR_LF, numC_LF] = size(LF) ;
 range_LF = [1, 0, numR_LF-1, numC_LF-2]; % Zero-based indexing!
-LF = csvread("data_experiments_simulation/ExperimentG2W/LF_joint_data.csv", 1, 0, range_LF);
+LF = csvread(strcat(path, "LF_joint_data.csv"), 1, 0, range_LF);
 
 [numR_LH, numC_LH] = size(LH); 
 range_LH = [1, 0, numR_LH-1, numC_LH-2]; % Zero-based indexing!
-LH = csvread("data_experiments_simulation/ExperimentG2W/LH_joint_data.csv", 1, 0, range_LH);
+LH = csvread(strcat(path, "LH_joint_data.csv"), 1, 0, range_LH);
 
 [numR_RH, numC_RH] = size(RH);
 range_RH = [1, 0, numR_RH-1, numC_RH-2]; % Zero-based indexing!
-RH = csvread("data_experiments_simulation/ExperimentG2W/RH_joint_data.csv", 1, 0, range_RH);
+RH = csvread(strcat(path, "RH_joint_data.csv"), 1, 0, range_RH);
 
 [numR_RF, numC_RF] = size(RF); 
 range_RF = [1, 0, numR_RF-1, numC_RF-2]; % Zero-based indexing!
-RF = csvread("data_experiments_simulation/ExperimentG2W/RF_joint_data.csv", 1, 0, range_RF);
+RF = csvread(strcat(path, "RF_joint_data.csv"), 1, 0, range_RF);
 
 limbs_data = {};
 limbs_data{1} = LF; 
@@ -46,7 +57,7 @@ for i=1:N_limbs
     T2E_index = 8;
 
     limbs_data{i}(:,1) =  limbs_data{i}(:,1) - limbs_data{i}(1,1);
-    limbs_data{i}(:,1) = limbs_data{i}(:,1)/1e3;
+    limbs_data{i}(:,1) = limbs_data{i}(:,1)/1e9;
 
     % limbs_data{i}(:,F2T_index) =  limbs_data{i}(:,F2T_index) + F2T_offset;
     % limbs_data{i}(:,F2T_index+1) =  limbs_data{i}(:,F2T_index+1) + F2T_offset;
@@ -64,24 +75,25 @@ for t=1:time_steps
     for i=1:N_limbs
         contact_mask(t, i) = 1;
         for j=1:N_joint
-            q(i,j,t) = limbs_data{i}(t, j*2+1);
+            q(i,j,t) = limbs_data{i}(t, j*3);
         end
-        if q(i,2,t) < -0.8
+        if q(i,2,t) < -1.2
             contact_mask(t,i) = 0; 
         end
     end
-    q(:,7,t) = zeros(N_limbs,1); % correct driving joint 
+   % q(:,7,t) = zeros(N_limbs,1); % correct driving joint 
 end
 
 %% AVERAGE TRACKING ERROR
 avg_errors = [];
 max_errors = [];
+
 for i=1:N_limbs
     for  j=1:N_joint-1
-         joint_state_index = j*2;
-         joint_ref_index =  j*2 + 1;
-         avg_errors(i,j) = sum(abs(limbs_data{i}(:,joint_ref_index)-limbs_data{i}(:,joint_state_index)))/size(limbs_data{i}(:,joint_state_index), 1);
-         max_errors(i,j) = max(abs(limbs_data{i}(:,joint_ref_index)-limbs_data{i}(:,joint_state_index)));
+         joint_state_index = j*3;
+         joint_ref_index =  j*3 - 1;
+         avg_errors(i,j) = sum(abs(limbs_data{i}(200:end,joint_ref_index)-limbs_data{i}(200:end,joint_state_index)))/size(limbs_data{i}(200:end,joint_state_index), 1);
+         max_errors(i,j) = max(abs(limbs_data{i}(200:end,joint_ref_index)-limbs_data{i}(200:end,joint_state_index)));
     end
 end
 
@@ -93,24 +105,82 @@ for i=1:N_limbs
     figure('Name',name)
     for  j=1:N_joint 
         subplot(2,4,j)
-        joint_state_index = j*2;
-        joint_ref_index =  j*2 + 1;
+        joint_state_index = j*3;
+        joint_ref_index =  j*3 - 1;
         plot(limbs_data{i}(:,1), limbs_data{i}(:,joint_ref_index), 'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0);
         hold on 
         plot(limbs_data{i}(:,1), limbs_data{i}(:,joint_state_index), 'b', 'LineWidth',2.0);
         plot(limbs_data{i}(:,1), limbs_data{i}(:,joint_ref_index)-limbs_data{i}(:,joint_state_index), 'r-');
         grid on 
         xlabel('time[s]')
-        ylabel('joint angle [rad]')
+        if j<7
+            ylabel('joint angle [rad]')
+        else
+            ylabel('joint speed [rad/s]')
+        end 
         legend('reference','actual', 'error')
         title(joint_names(j))
-        ax = gca;               % Get current axes
+         ax = gca;               % Get current axes
         ax.FontSize = 16;       % Set font size
         hold off
     end
     sgtitle(strcat("Limb ", limb_names(i), ": Joint state tracking performance"));
 end
 
+for i=1:N_limbs
+    name = strcat("Limb ", limb_names(i), ": Joint Control Torque");
+    figure('Name',name)
+    for  j=1:N_joint 
+        subplot(2,4,j)
+        joint_tau_index =  j*3 + 1;
+        plot(limbs_data{i}(:,1), limbs_data{i}(:,joint_tau_index), 'Color', '#0E6926', 'LineWidth',2.0);
+        hold on 
+        grid on 
+        xlabel('time[s]')
+        ylabel('joint torque [Nm]')
+        axis([0,limbs_data{i}(end,1), -14, 14]);
+        legend('torque')
+        title(joint_names(j))
+        ax = gca;               % Get current axes
+        ax.FontSize = 16;       % Set font size
+        hold off
+    end
+    sgtitle(strcat("Limb ", limb_names(i), ":  Joint Control Torque"));
+end
+
+if strcmp(file,"drive")
+     
+     figure('Name',"driving velocity Tracking") 
+    for i=1:N_limbs
+        subplot(2,4,i)
+        plot(limbs_data{i}(:,1), limbs_data{i}(:,7*3), 'Color', 'b', 'LineWidth',2.0);
+        hold on
+        grid on 
+        xlabel('time[s]')
+        ylabel('joint velocity [rad/s]')
+        legend('velocity')
+        name = strcat("Limb ", limb_names(i), " driving joint velocity");
+        title(name)
+        ax = gca;               % Get current axes
+        ax.FontSize = 16;       % Set font size
+        axis([0,limbs_data{i}(end,1), -15, 15]);
+        hold off
+        subplot(2,4,i+4)
+        plot(limbs_data{i}(:,1), limbs_data{i}(:,7*3+1),'Color', '#0E6926', 'LineWidth',2.0);
+        hold on
+        grid on 
+        xlabel('time[s]')
+        ylabel('driving torque [Nm]')
+        legend('torque')
+        name = strcat("Limb ", limb_names(i), " driving torque");
+        title(name)
+        ax = gca;               % Get current axes
+        ax.FontSize = 16;       % Set font size
+        axis([0,limbs_data{i}(end,1), -15, 15]);
+        hold off
+        sgtitle("Driving Velocity tracking performance");
+    end
+end
 % Plot Robot
 disp("--------------------------------------")
 disp("PRESS ENTER TO START VIEW ROBOT MODEL:")
@@ -281,7 +351,7 @@ end
 
 %% SSM ANALYSIS
 figure('Name', 'SSM Analysis')
-times = limbs_data{1}(1:100:time_steps,1);
+times = limbs_data{1}(1:step:time_steps,1);
 
 subplot(1,2,1)
 plot(times', SSM_signal', 'LineWidth',1.5);
@@ -292,7 +362,6 @@ ylabel('SSM [m]')
 ax = gca;               % Get current axes
 ax.FontSize = 16;       % Set font size
 
-
 subplot(1,2,2)
 plot(times', SSM_signal_normalized','LineWidth',1.5);
 grid on 
@@ -301,6 +370,5 @@ xlabel('Time [s]')
 ylabel('SSM_{%}')
 ax = gca;               % Get current axes
 ax.FontSize = 16;       % Set font size
-
 
 
