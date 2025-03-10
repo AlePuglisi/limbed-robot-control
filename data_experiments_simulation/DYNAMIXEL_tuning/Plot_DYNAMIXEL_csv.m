@@ -45,91 +45,105 @@ wristV_position = (wristV(4,:)-2048)*pi/2048;
 wristV_reference = (wristV(3,:)-2048)*pi/2048;
 
 figure('Name', 'DYNAMIXEL B2C MOTORS TRACKING PERFORMANCE')
-plot(B2C_time, B2C_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',1.0)
+plot(B2C_time, B2C_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0)
 hold on 
-plot(B2C_time, B2C_position,'b', 'LineWidth',1.0)
-plot(B2C_time, B2C_reference-B2C_position,'r-.')
+plot(B2C_time, B2C_position,'b', 'LineWidth',2.0)
+plot(B2C_time, B2C_reference-B2C_position,'r',  'LineWidth',1.5)
 title('B2C Tracking')
 xlabel('time[s]')
 ylabel('joint angle [rad]')
 hold off
 legend('reference','actual', 'error')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 figure('Name', 'DYNAMIXEL C2F MOTORS TRACKING PERFORMANCE')
-plot(C2F_time, C2F_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',1.0)
+plot(C2F_time, C2F_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0)
 hold on 
-plot(C2F_time, C2F_position,'b', 'LineWidth',1.0)
-plot(C2F_time, C2F_reference-C2F_position,'r-.')
+plot(C2F_time, C2F_position,'b', 'LineWidth',2.0)
+plot(C2F_time, C2F_reference-C2F_position,'r', 'LineWidth',1.5)
 title('C2F Tracking')
 xlabel('time[s]')
 ylabel('joint angle [rad]')
 hold off
 legend('reference','actual', 'error')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 figure('Name', 'DYNAMIXEL F2T MOTORS TRACKING PERFORMANCE')
-plot(F2T_time, F2T_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',1.0)
+plot(F2T_time, F2T_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0)
 hold on 
-plot(F2T_time, F2T_position,'b', 'LineWidth',1.0)
-plot(F2T_time, F2T_reference-F2T_position,'r-.')
+plot(F2T_time, F2T_position,'b', 'LineWidth',2.0)
+plot(F2T_time, F2T_reference-F2T_position,'r', 'LineWidth',1.5)
 title('F2T Tracking')
 xlabel('time[s]')
 ylabel('joint angle [rad]')
 hold off
 legend('reference','actual', 'error')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 figure('Name', 'DYNAMIXEL T2E MOTORS TRACKING PERFORMANCE')
-plot(T2E_time, T2E_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',1.0)
+plot(T2E_time, T2E_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0)
 hold on 
-plot(T2E_time, T2E_position,'b', 'LineWidth',1.0)
-plot(T2E_time, T2E_reference-T2E_position,'r-.')
+plot(T2E_time, T2E_position,'b', 'LineWidth',2.0)
+plot(T2E_time, T2E_reference-T2E_position,'r', 'LineWidth',1.5)
 title('T2E Tracking')
 xlabel('time[s]')
 ylabel('joint angle [rad]')
 hold off
 legend('reference','actual', 'error')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 figure('Name', 'DYNAMIXEL wristH MOTORS TRACKING PERFORMANCE')
-plot(wristH_time, wristH_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',1.0)
+plot(wristH_time, wristH_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0)
 hold on 
-plot(wristH_time, wristH_position,'b', 'LineWidth',1.0)
-plot(wristH_time, wristH_reference-wristH_position,'r-.')
+plot(wristH_time, wristH_position,'b', 'LineWidth',2.0)
+plot(wristH_time, wristH_reference-wristH_position,'r', 'LineWidth',1.5)
 title('WristH Tracking')
 xlabel('time[s]')
 ylabel('joint angle [rad]')
 hold off
 legend('reference','actual', 'error')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 figure('Name', 'DYNAMIXEL wristV MOTORS TRACKING PERFORMANCE')
-plot(wristV_time, wristV_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',1.0)
+plot(wristV_time, wristV_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0)
 hold on 
-plot(wristV_time, wristV_position,'b', 'LineWidth',1.0)
-plot(wristV_time, wristV_reference-wristV_position,'r-.')
+plot(wristV_time, wristV_position,'b', 'LineWidth',2.0)
+plot(wristV_time, wristV_reference-wristV_position,'r', 'LineWidth',1.5)
 title('WristV Tracking')
 xlabel('time[s]')
 ylabel('joint angle [rad]')
 hold off
-legend('reference','actual')
+legend('reference','actual', 'error')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 
 figure('Name', 'DYNAMIXEL MOTORS TRACKING PERFORMANCE')
 
 subplot(2,3,1)
-plot(B2C_time, B2C_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',1.0)
+plot(B2C_time, B2C_reference,'Color', '#0E6926', 'LineStyle','--', 'LineWidth',2.0)
 hold on 
-plot(B2C_time, B2C_position,'b', 'LineWidth',1.0)
-plot(B2C_time, B2C_reference-B2C_position,'r-.')
+plot(B2C_time, B2C_position,'b', 'LineWidth',2.0)
+plot(B2C_time, B2C_reference-B2C_position,'r', 'LineWidth',1.5)
 title('B2C')
 xlabel('time[s]')
 ylabel('joint angle [rad]')
 hold off
 legend('reference','actual')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 subplot(2,3,2)
 plot(C2F_time, C2F_reference, 'b--')
@@ -141,6 +155,8 @@ ylabel('joint angle [rad]')
 hold off
 legend('reference','actual')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 subplot(2,3,3)
 plot(F2T_time, F2T_reference, 'b--')
@@ -152,6 +168,8 @@ ylabel('joint angle [rad]')
 hold off
 legend('reference','actual')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 subplot(2,3,4)
 plot(T2E_time, T2E_reference, 'b--')
@@ -163,6 +181,8 @@ ylabel('joint angle [rad]')
 hold off
 legend('reference','actual')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 subplot(2,3,5)
 plot(wristH_time, wristH_reference, 'b--')
@@ -174,6 +194,8 @@ ylabel('joint angle [rad]')
 hold off
 legend('reference','actual')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
 subplot(2,3,6)
 plot(wristV_time, wristV_reference, 'b--')
@@ -185,4 +207,6 @@ ylabel('joint angle [rad]')
 hold off
 legend('reference','actual')
 grid on
+ax = gca;               % Get current axes
+ax.FontSize = 16;       % Set font size
 
