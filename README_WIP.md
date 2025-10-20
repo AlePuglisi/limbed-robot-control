@@ -1,0 +1,3 @@
+# limbed-robot-control 
+
+WIP to rewrite a complete readme to use the manipulability ellipsoid MATLAB code ... 
